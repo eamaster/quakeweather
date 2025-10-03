@@ -2,19 +2,19 @@ import { Hono } from 'hono';
 import { Env, QuakeFeature, WeatherResponse } from '../lib/types';
 import { CacheManager, cacheOptions } from '../lib/cache';
 import { generateInsight } from '../lib/insight';
-import { z } from 'zod';
+// import { z } from 'zod';
 
 const insightRoute = new Hono<{ Bindings: Env }>();
 
-const insightQuerySchema = z.object({
-  quakeId: z.string().optional(),
-  mag: z.coerce.number().optional(),
-  depth: z.coerce.number().optional(),
-  place: z.string().optional(),
-  time: z.coerce.number().optional(),
-  lat: z.coerce.number().optional(),
-  lon: z.coerce.number().optional(),
-});
+// const insightQuerySchema = z.object({
+//   quakeId: z.string().optional(),
+//   mag: z.coerce.number().optional(),
+//   depth: z.coerce.number().optional(),
+//   place: z.string().optional(),
+//   time: z.coerce.number().optional(),
+//   lat: z.coerce.number().optional(),
+//   lon: z.coerce.number().optional(),
+// });
 
 insightRoute.post('/', async (c) => {
   try {

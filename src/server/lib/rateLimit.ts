@@ -7,12 +7,12 @@ export class RateLimiter {
   private buckets: Map<string, RateLimitEntry> = new Map();
   private maxTokens: number;
   private refillRate: number; // tokens per second
-  private refillInterval: number; // milliseconds
+  // private refillInterval: number; // milliseconds
 
   constructor(maxTokens: number = 30, windowSeconds: number = 600) {
     this.maxTokens = maxTokens;
     this.refillRate = maxTokens / windowSeconds;
-    this.refillInterval = 1000; // Check every second
+    // this.refillInterval = 1000; // Check every second
   }
 
   async checkLimit(identifier: string): Promise<{ allowed: boolean; remaining: number }> {

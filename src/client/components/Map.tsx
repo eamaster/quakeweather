@@ -14,22 +14,23 @@ interface MapProps {
   magnitudeRange: [number, number];
 }
 
-function getMagnitudeColor(mag: number): string {
-  if (mag >= 6) return '#9333ea'; // purple-600
-  if (mag >= 5) return '#dc2626'; // red-600
-  if (mag >= 4) return '#ea580c'; // orange-600
-  if (mag >= 3) return '#eab308'; // yellow-500
-  return '#22c55e'; // green-500
-}
+// Helper functions for magnitude styling (used in map paint properties)
+// const getMagnitudeColor = (mag: number): string => {
+//   if (mag >= 6) return '#9333ea'; // purple-600
+//   if (mag >= 5) return '#dc2626'; // red-600
+//   if (mag >= 4) return '#ea580c'; // orange-600
+//   if (mag >= 3) return '#eab308'; // yellow-500
+//   return '#22c55e'; // green-500
+// }
 
-function getMagnitudeRadius(mag: number): number {
-  return 4 + mag * 3;
-}
+// const getMagnitudeRadius = (mag: number): number => {
+//   return 4 + mag * 3;
+// }
 
 export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const popup = useRef<mapboxgl.Popup | null>(null);
+  // const popup = useRef<mapboxgl.Popup | null>(null);
   const [selectedQuake, setSelectedQuake] = useState<QuakeFeature | null>(null);
 
   // Fetch earthquake data
@@ -200,7 +201,7 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
         const source = map.current.getSource('earthquakes') as mapboxgl.GeoJSONSource;
         
         source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err || !map.current) return;
+          if (err || !map.current || zoom === undefined || zoom === null) return;
           map.current.easeTo({
             center: (features[0].geometry as any).coordinates,
             zoom: zoom,

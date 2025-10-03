@@ -44,7 +44,7 @@ export async function fetchWeather(
     throw new Error(`OpenWeather API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
 
   // Check if event time is in the past (approximate mode)
   const now = Date.now();

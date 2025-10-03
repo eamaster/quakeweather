@@ -1,4 +1,4 @@
-import { createCacheKey } from './utils';
+// import { createCacheKey } from './utils';
 
 export interface CacheOptions {
   ttl: number; // seconds
@@ -50,7 +50,9 @@ export class CacheManager {
     // Clean old entries from memory cache (keep last 100)
     if (this.memoryCache.size > 100) {
       const oldestKey = this.memoryCache.keys().next().value;
-      this.memoryCache.delete(oldestKey);
+      if (oldestKey) {
+        this.memoryCache.delete(oldestKey);
+      }
     }
   }
 
