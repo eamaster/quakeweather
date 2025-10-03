@@ -1,0 +1,20 @@
+name = "quakeweather"
+main = "functions/[[path]].ts"
+compatibility_date = "2025-10-03"
+
+[vars]
+NODE_VERSION = "20"
+
+# Optional KV namespace for advanced caching
+# [[kv_namespaces]]
+# binding = "CACHE_KV"
+# id = "your_kv_namespace_id"
+
+# For Cloudflare Pages deployment
+[site]
+bucket = "./dist"
+
+# Cron trigger for prefetching common feeds (optional)
+# [triggers]
+# crons = ["*/5 * * * *"]
+
