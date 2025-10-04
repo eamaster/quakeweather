@@ -1,6 +1,6 @@
-name = "quakeweather"
+name = "quakeweather-api"
 compatibility_date = "2025-10-03"
-pages_build_output_dir = "dist"
+main = "src/server/index.ts"
 
 [vars]
 NODE_VERSION = "20"

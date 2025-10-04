@@ -37,7 +37,11 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
   const { data: quakeData, isLoading, error } = useQuery<QuakeCollection>({
     queryKey: ['quakes', selectedFeed],
     queryFn: async () => {
-      const response = await fetch(`/api/quakes?feed=${selectedFeed}`);
+      // Use deployed backend URL for GitHub Pages, fallback to local for development
+      const apiBase = window.location.hostname === 'hesam.me' 
+        ? 'https://quakeweather-api.smah0085.workers.dev'
+        : '';
+      const response = await fetch(`${apiBase}/api/quakes?feed=${selectedFeed}`);
       if (!response.ok) {
         throw new Error('Failed to fetch earthquake data');
       }

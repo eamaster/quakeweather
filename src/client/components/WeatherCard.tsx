@@ -13,7 +13,11 @@ export default function WeatherCard({ lat, lon, time, quake }: WeatherCardProps)
   const { data: weather, isLoading, error } = useQuery<WeatherResponse>({
     queryKey: ['weather', lat, lon, time],
     queryFn: async () => {
-      const response = await fetch(`/api/weather?lat=${lat}&lon=${lon}&t=${time}`);
+      // Use deployed backend URL for GitHub Pages, fallback to local for development
+      const apiBase = window.location.hostname === 'hesam.me' 
+        ? 'https://quakeweather-api.smah0085.workers.dev'
+        : '';
+      const response = await fetch(`${apiBase}/api/weather?lat=${lat}&lon=${lon}&t=${time}`);
       if (!response.ok) {
         if (response.status === 429) {
           throw new Error('Rate limit exceeded. Please wait before making more requests.');
