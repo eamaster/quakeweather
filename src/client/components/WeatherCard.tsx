@@ -90,7 +90,7 @@ export default function WeatherCard({ lat, lon, time, quake }: WeatherCardProps)
           )}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
             <p className="text-gray-500 dark:text-gray-400">Wind</p>
             <p className="text-gray-900 dark:text-white font-medium">
@@ -129,7 +129,7 @@ export default function WeatherCard({ lat, lon, time, quake }: WeatherCardProps)
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
             📈 8-Hour Forecast
           </h4>
-          <div className="grid grid-cols-4 gap-2 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {weather.hourly.slice(0, 8).map((hour, index) => (
               <div key={index} className="text-center">
                 <p className="text-gray-500 dark:text-gray-400">

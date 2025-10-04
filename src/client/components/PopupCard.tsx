@@ -24,7 +24,7 @@ export default function PopupCard({ quake, onClose }: PopupCardProps) {
   };
 
   return (
-    <div className="absolute top-4 right-4 w-96 max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 fade-in">
+    <div className="absolute top-2 right-2 left-2 sm:top-4 sm:right-4 sm:left-auto sm:w-96 max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 fade-in">
       {/* Header */}
       <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-start justify-between z-10">
         <div className="flex-1">
@@ -66,7 +66,7 @@ export default function PopupCard({ quake, onClose }: PopupCardProps) {
         </div>
 
         {/* Location details */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
               Depth
@@ -77,7 +77,7 @@ export default function PopupCard({ quake, onClose }: PopupCardProps) {
             <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
               Coordinates
             </h4>
-            <p className="text-xs text-gray-900 dark:text-white">
+            <p className="text-xs text-gray-900 dark:text-white break-all">
               {quake.geometry.coordinates[1].toFixed(4)}°, {quake.geometry.coordinates[0].toFixed(4)}°
             </p>
           </div>
