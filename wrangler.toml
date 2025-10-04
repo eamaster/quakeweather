@@ -1,6 +1,6 @@
 name = "quakeweather"
-main = "functions/[[path]].ts"
 compatibility_date = "2025-10-03"
+pages_build_output_dir = "dist"
 
 [vars]
 NODE_VERSION = "20"
@@ -9,10 +9,6 @@ NODE_VERSION = "20"
 # [[kv_namespaces]]
 # binding = "CACHE_KV"
 # id = "your_kv_namespace_id"
-
-# For Cloudflare Pages deployment
-[site]
-bucket = "./dist"
 
 # Cron trigger for prefetching common feeds (optional)
 # [triggers]
