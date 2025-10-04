@@ -7,6 +7,7 @@ function App() {
   const [isDark, setIsDark] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState<FeedType>('all_day');
   const [magnitudeRange, setMagnitudeRange] = useState<[number, number]>([0, 10]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Check system preference
@@ -25,10 +26,21 @@ function App() {
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm z-10">
+      <header className="bg-white dark:bg-gray-800 shadow-sm z-20">
         <div className="max-w-full px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="lg:hidden p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Toggle sidebar"
+              >
+                <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
               <div className="flex items-center space-x-2">
                 <svg
                   className="w-8 h-8 text-primary-600 dark:text-primary-400"
@@ -43,7 +55,7 @@ function App() {
                     d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   QuakeWeather
                 </h1>
               </div>
@@ -76,12 +88,22 @@ function App() {
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden relative">
+        {/* Mobile overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
         {/* Controls sidebar */}
         <Controls
           selectedFeed={selectedFeed}
           onFeedChange={setSelectedFeed}
           magnitudeRange={magnitudeRange}
           onMagnitudeChange={setMagnitudeRange}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
         {/* Map */}
@@ -92,11 +114,12 @@ function App() {
 
       {/* Footer disclaimer */}
       <footer className="bg-yellow-50 dark:bg-yellow-900/20 border-t border-yellow-200 dark:border-yellow-800 z-10">
-        <div className="max-w-full px-4 py-2 sm:px-6 lg:px-8">
-          <p className="text-xs text-yellow-800 dark:text-yellow-200 text-center">
-            ⚠️ <strong>Educational Tool Only:</strong> Earthquake prediction is not scientifically
+        <div className="max-w-full px-2 py-1 sm:px-4 sm:py-2 lg:px-8">
+          <p className="text-xs text-yellow-800 dark:text-yellow-200 text-center leading-tight">
+            <span className="hidden sm:inline">⚠️ <strong>Educational Tool Only:</strong> Earthquake prediction is not scientifically
             reliable. Do not use this tool for safety-critical decisions. Weather and seismic
-            activity are independent phenomena.
+            activity are independent phenomena.</span>
+            <span className="sm:hidden">⚠️ <strong>Educational Tool Only</strong> - Not for safety decisions</span>
           </p>
         </div>
       </footer>

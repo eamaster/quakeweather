@@ -5,6 +5,8 @@ interface ControlsProps {
   onFeedChange: (feed: FeedType) => void;
   magnitudeRange: [number, number];
   onMagnitudeChange: (range: [number, number]) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const FEED_OPTIONS: { value: FeedType; label: string; description: string }[] = [
@@ -24,10 +26,30 @@ export default function Controls({
   onFeedChange,
   magnitudeRange,
   onMagnitudeChange,
+  isOpen = false,
+  onClose,
 }: ControlsProps) {
   return (
-    <aside className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto custom-scrollbar">
+    <aside className={`
+      w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto custom-scrollbar
+      lg:relative lg:translate-x-0 lg:z-auto
+      fixed top-0 left-0 h-full z-40 transform transition-transform duration-300 ease-in-out
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+    `}>
       <div className="p-4 space-y-6">
+        {/* Mobile close button */}
+        <div className="lg:hidden flex justify-end">
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            aria-label="Close sidebar"
+          >
+            <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
         {/* Feed selector */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
@@ -37,7 +59,13 @@ export default function Controls({
             {FEED_OPTIONS.map((option) => (
               <button
                 key={option.value}
-                onClick={() => onFeedChange(option.value)}
+                onClick={() => {
+                  onFeedChange(option.value);
+                  // Close sidebar on mobile after selection
+                  if (onClose) {
+                    onClose();
+                  }
+                }}
                 className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
                   selectedFeed === option.value
                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
