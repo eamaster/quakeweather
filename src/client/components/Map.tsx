@@ -200,6 +200,8 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
         const clusterId = features[0].properties?.cluster_id;
         const source = map.current.getSource('earthquakes') as mapboxgl.GeoJSONSource;
         
+        console.log('Cluster clicked, expanding...', clusterId);
+        
         source.getClusterExpansionZoom(clusterId, (err, zoom) => {
           if (err || !map.current || zoom === undefined || zoom === null) return;
           map.current.easeTo({
@@ -219,6 +221,7 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
           properties: feature.properties,
           geometry: feature.geometry,
         };
+        console.log('Individual earthquake clicked:', quake.properties.place, quake.properties.mag);
         setSelectedQuake(quake);
       });
 

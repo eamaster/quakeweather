@@ -54,16 +54,20 @@ export default function WeatherCard({ lat, lon, time, quake }: WeatherCardProps)
     <div className="space-y-4">
       {/* Current conditions */}
       <div className="bg-gradient-to-br from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-primary-100 dark:border-primary-800">
-        {weather.approximate && (
-          <div className="mb-2 text-xs text-primary-700 dark:text-primary-300 font-medium">
-            ℹ️ Showing current conditions (historical data not available in free tier)
+        {weather.approximate ? (
+          <div className="mb-2 text-xs text-orange-700 dark:text-orange-300 font-medium">
+            ⚠️ Showing current conditions (historical data not available)
+          </div>
+        ) : (
+          <div className="mb-2 text-xs text-green-700 dark:text-green-300 font-medium">
+            ✅ Showing weather conditions at earthquake time
           </div>
         )}
         
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-              Current Conditions
+              {weather.approximate ? 'Current Conditions' : 'Weather at Earthquake Time'}
             </h4>
             <div className="space-y-1">
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -115,6 +119,73 @@ export default function WeatherCard({ lat, lon, time, quake }: WeatherCardProps)
         )}
       </div>
 
+      {/* Hourly Forecast (One Call API 3.0 feature) */}
+      {weather.hourly && weather.hourly.length > 0 && (
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+            📈 8-Hour Forecast
+          </h4>
+          <div className="grid grid-cols-4 gap-2 text-xs">
+            {weather.hourly.slice(0, 8).map((hour, index) => (
+              <div key={index} className="text-center">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {new Date(hour.dt * 1000).toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    hour12: true 
+                  })}
+                </p>
+                <p className="text-gray-900 dark:text-white font-medium">
+                  {hour.temp.toFixed(0)}°C
+                </p>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {hour.weather[0]?.description || 'Clear'}
+                </p>
+                {hour.pop > 0 && (
+                  <p className="text-blue-600 dark:text-blue-400">
+                    {(hour.pop * 100).toFixed(0)}%
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Daily Forecast (One Call API 3.0 feature) */}
+      {weather.daily && weather.daily.length > 0 && (
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 border border-green-100 dark:border-green-800">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+            📅 3-Day Forecast
+          </h4>
+          <div className="space-y-2">
+            {weather.daily.slice(0, 3).map((day, index) => (
+              <div key={index} className="flex items-center justify-between text-sm">
+                <div className="flex-1">
+                  <p className="text-gray-900 dark:text-white font-medium">
+                    {index === 0 ? 'Today' : 
+                     index === 1 ? 'Tomorrow' : 
+                     new Date(day.dt * 1000).toLocaleDateString('en-US', { weekday: 'short' })}
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-300 text-xs">
+                    {day.weather[0]?.description || 'Clear'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-gray-900 dark:text-white font-medium">
+                    {day.temp.max.toFixed(0)}° / {day.temp.min.toFixed(0)}°C
+                  </p>
+                  {day.pop > 0 && (
+                    <p className="text-blue-600 dark:text-blue-400 text-xs">
+                      {(day.pop * 100).toFixed(0)}% rain
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Alerts */}
       {weather.alerts && weather.alerts.length > 0 && (
         <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
@@ -123,6 +194,9 @@ export default function WeatherCard({ lat, lon, time, quake }: WeatherCardProps)
           </h4>
           <p className="text-sm text-orange-700 dark:text-orange-300">
             {weather.alerts[0].event}
+          </p>
+          <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+            {weather.alerts[0].description}
           </p>
         </div>
       )}

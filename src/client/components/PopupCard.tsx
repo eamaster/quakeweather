@@ -10,10 +10,10 @@ interface PopupCardProps {
 export default function PopupCard({ quake, onClose }: PopupCardProps) {
   const [showWeather, setShowWeather] = useState(false);
   
-  const mag = quake.properties.mag.toFixed(1);
-  const depth = quake.geometry.coordinates[2].toFixed(1);
+  const mag = quake.properties.mag?.toFixed(1) || '0.0';
+  const depth = quake.geometry.coordinates[2]?.toFixed(1) || '0.0';
   const time = new Date(quake.properties.time);
-  const place = quake.properties.place;
+  const place = quake.properties.place || 'Unknown location';
 
   const getMagnitudeColor = (magnitude: number): string => {
     if (magnitude >= 6) return 'text-purple-600 dark:text-purple-400';
