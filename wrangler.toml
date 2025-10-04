@@ -5,6 +5,10 @@ main = "src/server/index.ts"
 [vars]
 NODE_VERSION = "20"
 
+# Environment variables (secrets)
+# These will be set via: wrangler secret put OPENWEATHER_API_KEY
+# These will be set via: wrangler secret put MAPBOX_TOKEN
+
 # Optional KV namespace for advanced caching
 # [[kv_namespaces]]
 # binding = "CACHE_KV"
