@@ -1,6 +1,6 @@
 # QuakeWeather
 
-> **Map-centric educational web app** that fuses **USGS earthquakes** with **OpenWeather** conditions and provides **AI-assisted narratives** (summaries + non-predictive insights).
+> **Educational web app** that combines **USGS earthquake data** with **OpenWeather conditions** and provides **AI-generated insights**.
 
 ![QuakeWeather](https://img.shields.io/badge/status-production-green) ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -38,7 +38,7 @@
 
 ### Data Sources
 - **USGS Earthquake API** - Real-time seismic data
-- **OpenWeather One Call 3.0** - Weather conditions
+- **OpenWeather API** - Weather conditions
 - **Mapbox** - Map tiles and geocoding
 
 ---
@@ -73,7 +73,7 @@
    ```
 
    **Getting API Keys:**
-   - **OpenWeather**: Sign up at [OpenWeather](https://openweathermap.org/api/one-call-3) (free tier available)
+   - **OpenWeather**: Sign up at [OpenWeather](https://openweathermap.org/api) (free tier available)
    - **Mapbox**: Create a token at [Mapbox Account](https://account.mapbox.com/)
 
 4. **Start the development server**
@@ -166,7 +166,7 @@ Fetch weather data for a location.
 - `lon` - Longitude (-180 to 180)
 - `t` - Timestamp (optional, defaults to current time)
 
-**Response:** Weather data with current conditions, hourly forecast, and alerts
+**Response:** Weather data with current conditions
 
 **Rate Limiting:** 30 requests per 10 minutes per IP
 

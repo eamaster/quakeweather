@@ -27,7 +27,7 @@ npm run dev
 
 **Terminal 2 - Backend:**
 ```bash
-npx wrangler pages dev dist --live-reload
+npx wrangler pages dev dist --port=8787
 ```
 → Runs at: **http://localhost:8787**
 

@@ -1,104 +1,41 @@
 # 🔧 QuakeWeather Troubleshooting Guide
 
-## ✅ UPDATED: Now Using FREE One Call API 2.5
+## ✅ **Current Status: Working with OpenWeather API**
 
 **Your API Key:** `REMOVED_OPENWEATHER_API_KEY`
 
-### ✅ **FIXED: Project Now Uses Free Tier API**
+### ✅ **Project Uses Smart API Selection**
 
-QuakeWeather has been **updated to use One Call API 2.5** which is **FREE** and compatible with your student account!
+QuakeWeather automatically tries One Call API 3.0 first, then falls back to Current Weather API if needed.
 
-**Change Made:**
-- ✅ Updated `src/server/lib/openweather.ts` to use API 2.5
-- ✅ Endpoint changed from `data/3.0/onecall` → `data/2.5/onecall`
-- ✅ Compatible with free/student OpenWeather accounts
-
-#### Previous Problem (Now Resolved)
-
-Previously, QuakeWeather used **OpenWeather One Call API 3.0**, which requires a **separate paid subscription** called "One Call by Call". A standard free OpenWeather API key **did not work** with that endpoint.
-
-According to OpenWeather documentation:
-- One Call API 3.0 endpoint: `https://api.openweathermap.org/data/3.0/onecall`
-- Requires subscription: **"One Call by Call"** ($0 for 1,000 calls/day, then pay-per-call)
-- Free tier API keys from the standard plans **do not have access**
-
-#### How to Fix
-
-**Option 1: Subscribe to One Call API 3.0 (Recommended for Production)**
-
-1. **Go to:** https://openweathermap.org/api/one-call-3
-2. **Click "Subscribe"** under "One Call by Call"
-3. **Choose the plan:**
-   - First 1,000 calls/day are FREE
-   - Then $0.0015 per call (very affordable)
-4. **Complete subscription**
-5. Your existing API key will now work with One Call API 3.0
-
-**Option 2: Downgrade to One Call API 2.5 (Free but Limited)**
-
-If you want to use the free tier, we need to modify the code to use One Call API 2.5:
-
-Changes needed in `src/server/lib/openweather.ts`:
-
-```typescript
-// Change line 5 from:
-const ONECALL_BASE = 'https://api.openweathermap.org/data/3.0/onecall';
-
-// To:
-const ONECALL_BASE = 'https://api.openweathermap.org/data/2.5/onecall';
-```
-
-**⚠️ Warning:** One Call API 2.5 is deprecated and will be discontinued. OpenWeather recommends using 3.0.
+**Current Implementation:**
+- ✅ Smart API endpoint selection
+- ✅ Automatic fallback system
+- ✅ Enhanced weather features when available
+- ✅ Compatible with free and paid OpenWeather accounts
 
 ---
 
 ## 🔍 How to Test Your API Key
 
-### Test if Your Key Has One Call 3.0 Access
+### Test Current Weather API (Always Works)
 
-Open your browser and visit this URL (replace with your actual coordinates):
-
-```
-https://api.openweathermap.org/data/3.0/onecall?lat=33.44&lon=-94.04&appid=REMOVED_OPENWEATHER_API_KEY
-```
-
-**Expected Results:**
-
-✅ **If it works:** You'll see JSON weather data
-```json
-{
-  "lat": 33.44,
-  "lon": -94.04,
-  "timezone": "America/Chicago",
-  "current": { ... },
-  "hourly": [ ... ]
-}
-```
-
-❌ **If it fails:** You'll see an error
-```json
-{
-  "cod": 401,
-  "message": "Invalid API key. Please see https://openweathermap.org/faq#error401 for more info."
-}
-```
-or
-```json
-{
-  "cod": 403,
-  "message": "Access denied. You need to subscribe to use this API."
-}
-```
-
-### Test with One Call API 2.5 (Free Tier)
-
-Try this URL to see if your key works with the free 2.5 API:
+Open your browser and visit this URL:
 
 ```
-https://api.openweathermap.org/data/2.5/onecall?lat=33.44&lon=-94.04&appid=REMOVED_OPENWEATHER_API_KEY
+https://api.openweathermap.org/data/2.5/weather?lat=33.44&lon=-94.04&appid=REMOVED_OPENWEATHER_API_KEY&units=metric
 ```
 
-If this works but 3.0 doesn't, your key only has access to the free tier.
+**Expected Result:** You should see JSON weather data with current conditions.
+
+### Test One Call API 3.0 (If You Have Subscription)
+
+```
+https://api.openweathermap.org/data/3.0/onecall?lat=33.44&lon=-94.04&appid=REMOVED_OPENWEATHER_API_KEY&units=metric
+```
+
+**If it works:** You'll get enhanced weather data with forecasts.
+**If it fails:** App will automatically fall back to Current Weather API.
 
 ---
 
@@ -107,14 +44,15 @@ If this works but 3.0 doesn't, your key only has access to the free tier.
 ### Step-by-Step User Flow
 
 1. **Start the app** - You should see earthquake markers on the map
-2. **Click any earthquake marker** - A popup card appears on the right
-3. **Click "Show Weather & Insights"** button in the popup
-4. **Weather loads** - You should see current conditions, forecast, and AI insights
+2. **Click on a cluster** (large circle with number) - Map zooms in
+3. **Click individual earthquake marker** - A popup card appears on the right
+4. **Click "Show Weather & Insights"** button in the popup
+5. **Weather loads** - You should see current conditions and AI insights
 
 ### If You Don't See the Weather Button
 
 **Check:**
-- Did you click on an earthquake marker?
+- Did you click on an individual earthquake marker (not a cluster)?
 - Is the popup card visible on the right side?
 - Look for the blue button that says "Show Weather & Insights"
 
@@ -128,21 +66,17 @@ If this works but 3.0 doesn't, your key only has access to the free tier.
 
 **Common errors:**
 
-**Error: "OpenWeather API error: 401"**
-- Your API key is invalid or expired
-- Get a new key from https://openweathermap.org/api
-
-**Error: "OpenWeather API error: 403"**
-- Your API key doesn't have access to One Call API 3.0
-- Subscribe to One Call by Call plan
+**Error: "Failed to fetch weather data"**
+- Backend server (port 8787) is not running
+- Restart: `npx wrangler pages dev dist --port=8787`
 
 **Error: "Rate limit exceeded"**
 - You've made too many requests (limit: 30 per 10 minutes)
 - Wait 10 minutes and try again
 
-**Error: "Failed to fetch"**
-- Backend server (port 8787) is not running
-- Restart: `npx wrangler pages dev dist --port=8787`
+**Error: "OpenWeather API error: 401"**
+- Your API key is invalid or expired
+- Check `.dev.vars` file has correct API key
 
 ---
 
@@ -160,25 +94,12 @@ If this works but 3.0 doesn't, your key only has access to the free tier.
 npx wrangler pages dev dist --port=8787
 ```
 
-Check if it's running:
-```bash
-curl http://localhost:8787/api/health
-```
-
-Expected response:
-```json
-{"status":"ok","timestamp":"2025-10-04T..."}
-```
-
----
-
 ### Issue 2: Environment Variable Not Set
 
 **Symptoms:**
 - Error: "OpenWeather API key not configured"
 
 **Solution:**
-
 1. **Check `.dev.vars` file exists:**
 ```bash
 # Should contain:
@@ -188,52 +109,25 @@ MAPBOX_TOKEN=REMOVED_MAPBOX_TOKEN
 
 2. **Restart the backend server** (Wrangler reads `.dev.vars` on startup)
 
----
-
-### Issue 3: CORS Errors
-
-**Symptoms:**
-- Browser console shows "CORS policy" errors
-- Weather API calls are blocked
-
-**Solution:**
-- This shouldn't happen in local development
-- Make sure you're accessing via `http://localhost:5173` (not `127.0.0.1` or file://)
-- Check that Vite proxy is configured (it is in `vite.config.ts`)
-
----
-
-### Issue 4: Map Loads But No Earthquakes
+### Issue 3: Map Loads But No Earthquakes
 
 **Symptoms:**
 - Map appears but is empty
 - No markers visible
 
 **Solution:**
-
 1. **Check browser console** for errors
-2. **Verify `/api/quakes` is working:**
-   ```bash
-   curl http://localhost:8787/api/quakes?feed=all_day
-   ```
-3. **Try different time window** in the left sidebar
-4. **Check USGS API status:** https://earthquake.usgs.gov/
+2. **Try different time window** in the left sidebar
+3. **Check USGS API status:** https://earthquake.usgs.gov/
 
----
-
-### Issue 5: "Retry-After" or Rate Limit Errors
+### Issue 4: Rate Limit Errors
 
 **Symptoms:**
 - Error: "Rate limit exceeded"
 - Weather stops loading after several requests
 
-**Explanation:**
-- QuakeWeather limits weather API calls to **30 per 10 minutes**
-- This protects your API quota
-
 **Solution:**
-- Wait 10 minutes
-- Use weather data sparingly
+- Wait 10 minutes (limit: 30 requests per 10 minutes)
 - Cache is enabled (10 minutes) to reduce API calls
 
 ---
@@ -251,8 +145,7 @@ When you click "Show Weather & Insights", watch the backend terminal:
 
 **Bad logs:**
 ```
-[wrangler:err] GET /api/weather?lat=34.05&lon=-118.25&t=1696377600000 401 Unauthorized
-Error fetching weather: OpenWeather API error: 401 Unauthorized
+[wrangler:err] Error fetching weather: OpenWeather API error: 401 Unauthorized
 ```
 
 ### 2. Test API Directly
@@ -269,9 +162,7 @@ curl "http://localhost:8787/api/weather?lat=34.05&lon=-118.25&t=1696377600000"
     "temp": 22.5,
     "weather": [{"description": "clear sky", "icon": "01d"}],
     ...
-  },
-  "hourly": [...],
-  "alerts": [...]
+  }
 }
 ```
 
@@ -283,38 +174,23 @@ curl "http://localhost:8787/api/weather?lat=34.05&lon=-118.25&t=1696377600000"
 }
 ```
 
-### 3. Enable Verbose Logging
-
-Add this to `src/server/lib/openweather.ts` after line 35:
-
-```typescript
-const url = `${ONECALL_BASE}?${params.toString()}`;
-console.log('[DEBUG] Fetching weather from:', url); // Add this line
-
-const response = await fetch(url);
-```
-
-This will show the exact URL being called in the backend logs.
-
 ---
 
 ## ✅ Quick Fix Checklist
 
-- [ ] OpenWeather One Call API 3.0 subscription active
 - [ ] API key is correct in `.dev.vars`
 - [ ] Backend server running on port 8787
 - [ ] Frontend server running on port 5173
-- [ ] Clicked on an earthquake marker
+- [ ] Clicked on individual earthquake marker (not cluster)
 - [ ] Clicked "Show Weather & Insights" button
 - [ ] Checked browser console for errors
 - [ ] Checked backend terminal for error logs
-- [ ] Tested API key with direct URL (see above)
 
 ---
 
 ## 🚀 If Everything Fails
 
-### Nuclear Option: Complete Reset
+### Complete Reset
 
 1. **Stop all servers** (Ctrl+C in both terminals)
 
@@ -367,7 +243,7 @@ curl http://localhost:8787/api/health
 curl http://localhost:8787/api/quakes?feed=all_hour
 ```
 
-**Weather (with real coordinates):**
+**Weather:**
 ```bash
 curl "http://localhost:8787/api/weather?lat=34.05&lon=-118.25&t=1696377600000"
 ```
@@ -377,24 +253,6 @@ curl "http://localhost:8787/api/weather?lat=34.05&lon=-118.25&t=1696377600000"
 - **API Status:** https://status.openweathermap.org/
 - **FAQ:** https://openweathermap.org/faq
 - **Support:** https://openweathermap.org/support
-
----
-
-## 🎯 Most Likely Solution for Your Issue
-
-Based on your description, the **most likely cause** is:
-
-### ⚠️ Your API Key Doesn't Have One Call API 3.0 Access
-
-**Fix:**
-1. Go to: https://openweathermap.org/api/one-call-3
-2. Click "Subscribe" under "One Call by Call"
-3. Complete the free subscription (1,000 calls/day free)
-4. Your API key will now work!
-
-**Or alternatively:**
-1. Switch to One Call API 2.5 (change line 5 in `src/server/lib/openweather.ts`)
-2. This works with free API keys but is deprecated
 
 ---
 
