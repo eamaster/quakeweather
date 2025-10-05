@@ -106,9 +106,19 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
       console.log('Sample earthquake data:', filteredFeatures[0]);
       setOriginalQuakeData(filteredFeatures);
 
+      // Enhance features with original coordinates for depth preservation
+      const enhancedFeatures = filteredFeatures.map(feature => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          // Store original coordinates in properties for easy access
+          originalCoordinates: feature.geometry.coordinates,
+        }
+      }));
+
       const geojson = {
         type: 'FeatureCollection' as const,
-        features: filteredFeatures,
+        features: enhancedFeatures,
       };
 
       // Remove existing layers and source
@@ -229,22 +239,49 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
         console.log('Feature ID:', feature.id);
         console.log('Feature properties:', feature.properties);
         console.log('Available original data IDs:', originalQuakeData.map(q => q.id));
+        console.log('Original quake data length:', originalQuakeData.length);
         
-        // Find the original earthquake data by ID to preserve depth information
-        const originalQuake = originalQuakeData.find(q => q.id === feature.id);
+        // Try multiple methods to find the original earthquake data
+        let originalQuake = originalQuakeData.find(q => q.id === feature.id);
+        
+        // If ID matching fails, try matching by coordinates and magnitude
+        if (!originalQuake) {
+          const featureCoords = feature.geometry.coordinates;
+          const featureMag = feature.properties.mag;
+          
+          originalQuake = originalQuakeData.find(q => {
+            const qCoords = q.geometry.coordinates;
+            const qMag = q.properties.mag;
+            
+            // Match by coordinates (with small tolerance) and magnitude
+            const coordMatch = Math.abs(qCoords[0] - featureCoords[0]) < 0.001 && 
+                              Math.abs(qCoords[1] - featureCoords[1]) < 0.001;
+            const magMatch = Math.abs(qMag - featureMag) < 0.1;
+            
+            return coordMatch && magMatch;
+          });
+        }
         
         console.log('Found original quake:', originalQuake);
         
-        const quake: QuakeFeature = originalQuake || {
+        // Use original coordinates from properties if available, otherwise fallback to originalQuake
+        const originalCoords = feature.properties.originalCoordinates || originalQuake?.geometry.coordinates;
+        
+        const quake: QuakeFeature = {
           type: 'Feature',
           id: feature.id,
           properties: feature.properties,
-          geometry: feature.geometry,
+          geometry: {
+            type: 'Point',
+            coordinates: originalCoords || feature.geometry.coordinates,
+          },
         };
         
         console.log('Individual earthquake clicked:', quake.properties.place, quake.properties.mag);
-        console.log('Original coordinates:', originalQuake?.geometry.coordinates);
+        console.log('Original coordinates from properties:', feature.properties.originalCoordinates);
+        console.log('Original coordinates from find:', originalQuake?.geometry.coordinates);
         console.log('Mapbox coordinates:', feature.geometry.coordinates);
+        console.log('Final coordinates used:', quake.geometry.coordinates);
         setSelectedQuake(quake);
       });
 
