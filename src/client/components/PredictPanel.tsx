@@ -51,8 +51,8 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         : '';
         
       const topCells = predictData.cells
-        .sort((a, b) => b.probability - a.probability)
-        .slice(0, 5);
+        ?.sort((a, b) => b.probability - a.probability)
+        .slice(0, 5) || [];
       
       const recentEventsData = recentQuakes.slice(0, 5).map(q => ({
         lat: q.geometry.coordinates[1],
@@ -62,6 +62,12 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         place: q.properties.place,
       }));
       
+      console.log('Explain API request:', { topCells, recentEvents: recentEventsData });
+      
+      if (topCells.length === 0) {
+        throw new Error('No prediction cells available for explanation');
+      }
+      
       const response = await fetch(`${apiBase}/api/explain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,7 +75,9 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
       });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch explanation');
+        const errorText = await response.text();
+        console.error('Explain API error:', response.status, errorText);
+        throw new Error(`Failed to fetch explanation: ${response.status} ${errorText}`);
       }
       return response.json();
     },

@@ -10,8 +10,12 @@ import explainRoute from './routes/explain';
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Enable CORS
-app.use('*', cors());
+// Enable CORS with specific origins
+app.use('*', cors({
+  origin: ['https://hesam.me', 'https://quakeweather.smah0085.workers.dev', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}));
 
 // Health check
 app.get('/api/health', (c) => {

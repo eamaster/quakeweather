@@ -280,15 +280,19 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
   useEffect(() => {
     if (!map.current) return;
 
+    console.log('Map prediction data:', { predictionData, aftershockData });
+
     // Remove existing prediction layers
     removePredictionLayers(map.current);
 
     // Add new prediction layers
     if (predictionData) {
+      console.log('Adding nowcast heatmap with', predictionData.cells?.length || 0, 'cells');
       addNowcastHeatmap(map.current, predictionData);
     }
     
     if (aftershockData) {
+      console.log('Adding aftershock ring');
       addAftershockRing(map.current, aftershockData);
     }
   }, [predictionData, aftershockData]);
