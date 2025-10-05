@@ -12,13 +12,57 @@
 
 ## Features
 
-- 🗺️ **Interactive Mapbox GL map** with clustered earthquake visualization
-- 🌍 **Real-time USGS earthquake data** with multiple feed options (hour/day/week/month)
-- ☁️ **OpenWeather integration** showing current conditions and forecasts for earthquake locations
-- 🤖 **AI-generated insights** with non-predictive contextual analysis
-- 🎨 **Modern, responsive UI** with dark mode support
-- 🚀 **Production-ready** with server-side caching and rate limiting
-- ⚡ **Cloudflare Pages deployment** with edge functions for global performance
+### 🗺️ Interactive Mapping
+- **Mapbox GL JS** with clustered earthquake visualization
+- **Color-coded markers** by magnitude (green → purple for minor → major)
+- **Dynamic radius scaling** based on earthquake magnitude
+- **Smooth zoom and pan** controls with geolocation support
+- **Mobile-responsive** design with collapsible sidebar
+
+### 🌍 Real-time Earthquake Data
+- **USGS Earthquake API** integration with multiple feed options:
+  - Past Hour (`all_hour`) - All earthquakes in the last hour
+  - Past Day (`all_day`) - All earthquakes in the last 24 hours  
+  - M2.5+ Day (`2.5_day`) - Magnitude 2.5+ in the last day
+  - M4.5+ Week (`4.5_week`) - Magnitude 4.5+ in the last week
+  - Significant Month (`significant_month`) - Significant earthquakes in the last month
+- **Advanced filtering** with magnitude range slider (0.0 - 10.0)
+- **Context scoring** for earthquake ranking and relevance
+- **Conditional requests** with ETag support for efficient data fetching
+
+### ☁️ Smart Weather Integration
+- **OpenWeather One Call API 3.0** with intelligent fallback system:
+  - **Historical weather data** using timemachine endpoint for past earthquakes
+  - **Current conditions** with 8-hour hourly forecasts
+  - **Weather alerts** display when available
+  - **Automatic fallback** to Current Weather API if One Call API unavailable
+  - **Approximate mode** indicator when historical data isn't available
+- **Weather details**: Temperature, humidity, pressure, wind speed/direction, visibility
+- **Smart caching** with coordinate rounding for optimal performance
+
+### 🤖 AI-Generated Insights
+- **Rule-based contextual analysis** combining earthquake and weather data
+- **Magnitude classification** (minor → light → moderate → strong → major)
+- **Weather impact assessment** (wind effects, precipitation probability, pressure analysis)
+- **Depth analysis** (shallow vs deep earthquake effects)
+- **Educational disclaimers** emphasizing non-predictive nature
+- **Cached insights** for performance optimization
+
+### 🎨 Modern UI/UX
+- **Responsive design** optimized for mobile, tablet, and desktop
+- **Dark mode** with system preference detection
+- **Tailwind CSS** styling with smooth animations
+- **Accessible components** with proper ARIA labels
+- **Mobile hamburger menu** with slide-out sidebar
+- **Popup cards** with earthquake details and weather integration
+
+### 🚀 Production Features
+- **Multi-layer caching** (server-side memory + Cloudflare Cache API + client-side)
+- **Rate limiting** with token bucket algorithm (30 requests/10min per IP)
+- **Error handling** with graceful degradation
+- **Security headers** and CORS configuration
+- **Type safety** with TypeScript throughout
+- **Performance optimization** with code splitting and tree-shaking
 
 ---
 
@@ -99,41 +143,67 @@
 ```
 quakeweather/
 ├── src/
-│   ├── client/          # React frontend
-│   │   ├── components/  # UI components
-│   │   ├── App.tsx      # Main app component
-│   │   ├── main.tsx     # Entry point
-│   │   ├── types.ts     # TypeScript types
-│   │   └── styles.css   # Global styles
-│   └── server/          # Backend API
-│       ├── routes/      # API routes
-│       ├── lib/         # Utilities and helpers
-│       └── index.ts     # Hono app
-├── functions/           # Cloudflare Pages Functions
-├── public/              # Static assets
-├── package.json
-├── vite.config.ts
-├── wrangler.toml
-└── README.md
+│   ├── client/                    # React frontend
+│   │   ├── components/            # UI components
+│   │   │   ├── Map.tsx           # Interactive map with earthquake visualization
+│   │   │   ├── Controls.tsx      # Sidebar with filters and time window selector
+│   │   │   ├── PopupCard.tsx     # Earthquake details popup
+│   │   │   ├── WeatherCard.tsx   # Weather conditions and forecasts
+│   │   │   └── InsightCard.tsx   # AI-generated insights
+│   │   ├── App.tsx               # Main app component with theme and state
+│   │   ├── main.tsx              # Entry point with React Query setup
+│   │   ├── types.ts              # TypeScript type definitions
+│   │   └── styles.css            # Global styles and custom scrollbar
+│   └── server/                   # Backend API (Hono + Cloudflare Workers)
+│       ├── routes/               # API route handlers
+│       │   ├── quakes.ts         # USGS earthquake data endpoints
+│       │   ├── weather.ts        # OpenWeather proxy with rate limiting
+│       │   └── insight.ts        # AI insight generation
+│       ├── lib/                  # Core utilities and business logic
+│       │   ├── usgs.ts           # USGS API client with context scoring
+│       │   ├── openweather.ts    # OpenWeather API with smart fallbacks
+│       │   ├── insight.ts        # Rule-based AI insight generation
+│       │   ├── cache.ts          # Multi-layer caching system
+│       │   ├── rateLimit.ts      # Token bucket rate limiter
+│       │   ├── utils.ts          # Helper functions
+│       │   └── types.ts          # Shared TypeScript interfaces
+│       └── index.ts              # Hono app initialization
+├── functions/                    # Cloudflare Pages Functions (legacy)
+├── public/                       # Static assets (favicon, etc.)
+├── .github/workflows/            # GitHub Actions for deployment
+├── package.json                  # Dependencies and scripts
+├── vite.config.ts               # Vite configuration with GitHub Pages base
+├── wrangler.toml                # Cloudflare Workers configuration
+├── tailwind.config.ts           # Tailwind CSS configuration
+├── tsconfig.json                # TypeScript configuration
+└── README.md                    # This file
 ```
 
 ### Available Scripts
 
 ```bash
 # Development
-pnpm dev              # Start Vite dev server
-pnpm worker:dev       # Start Wrangler dev server for API
+npm run dev           # Start Vite dev server (frontend)
+npm run worker:dev    # Start Wrangler dev server (backend API)
+npm run pages:dev     # Start Cloudflare Pages dev server
 
-# Build
-pnpm build            # Build for production
-pnpm type-check       # Run TypeScript type checking
-
-# Preview
-pnpm preview          # Preview production build locally
+# Build & Type Checking
+npm run build         # Build for production (TypeScript + Vite)
+npm run type-check    # Run TypeScript type checking
+npm run preview       # Preview production build locally
 
 # Deployment
-pnpm pages:deploy     # Deploy to Cloudflare Pages
+npm run worker:deploy # Deploy backend to Cloudflare Workers
+npm run pages:deploy  # Deploy frontend to Cloudflare Pages
+
+# Quick Deploy (Windows)
+deploy.bat           # One-click deployment script
 ```
+
+**Development Workflow:**
+1. **Frontend**: `npm run dev` (runs on http://localhost:5173)
+2. **Backend**: `npm run worker:dev` (runs on http://localhost:8787)
+3. **Full Stack**: Both servers run simultaneously for development
 
 ---
 
@@ -159,18 +229,27 @@ Fetch earthquake data from USGS.
 
 ### `GET /api/weather`
 
-Fetch weather data for a location.
+Fetch weather data for a location with intelligent API selection.
 
 **Query Parameters:**
 - `lat` - Latitude (-90 to 90)
 - `lon` - Longitude (-180 to 180)
 - `t` - Timestamp (optional, defaults to current time)
 
-**Response:** Weather data with current conditions
+**Smart API Selection:**
+1. **Historical Data** (timestamp > 1 hour ago):
+   - Uses OpenWeather One Call API 3.0 `timemachine` endpoint
+   - Falls back to current `onecall` endpoint if timemachine unavailable
+   - Falls back to Current Weather API if One Call API unavailable
+2. **Current Data** (timestamp ≤ 1 hour ago):
+   - Uses OpenWeather One Call API 3.0 `onecall` endpoint
+   - Falls back to Current Weather API if One Call API unavailable
+
+**Response:** Weather data with current conditions, hourly forecasts, and alerts (when available)
 
 **Rate Limiting:** 30 requests per 10 minutes per IP
 
-**Caching:** 10 minutes
+**Caching:** 10 minutes (current) / 1 hour (historical)
 
 ---
 
@@ -201,31 +280,92 @@ Generate AI-assisted analysis for an earthquake.
 
 ## Deployment
 
-### Cloudflare Pages
+### 🚀 Multiple Deployment Options
 
-1. **Build the project**
-   ```bash
-   pnpm build
-   ```
+QuakeWeather supports both **Cloudflare Pages** and **GitHub Pages** deployment:
 
-2. **Deploy to Cloudflare Pages**
-   ```bash
-   pnpm pages:deploy
-   ```
+#### Option 1: Cloudflare Pages (Recommended) ⭐
 
-3. **Set environment variables** in Cloudflare Dashboard:
-   - Go to Pages → Your Project → Settings → Environment Variables
-   - Add `OPENWEATHER_API_KEY` and `MAPBOX_TOKEN`
+**Quick Deploy (Windows):**
+```bash
+# Just double-click this file:
+deploy.bat
+```
 
-### GitHub Actions (Automated Deployment)
+**Manual Deploy:**
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=quakeweather --branch=main
+```
 
+**Set Environment Variables:**
+- Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Pages → Your Project → Settings → Environment Variables
+- Add:
+  - `OPENWEATHER_API_KEY` - Your OpenWeather API key
+  - `MAPBOX_TOKEN` - Your Mapbox access token
+
+**Automatic Deployments:**
+- Connect GitHub repository to Cloudflare Pages
+- Every `git push` to `main` triggers automatic deployment
+- Preview deployments for pull requests
+
+#### Option 2: GitHub Pages
+
+**Automatic Deployment:**
 The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) for automatic deployment on push to `main`.
 
-**Required GitHub Secrets:**
-- `CLOUDFLARE_API_TOKEN` - API token from Cloudflare
-- `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
-- `OPENWEATHER_API_KEY` - OpenWeather API key
-- `MAPBOX_TOKEN` - Mapbox access token
+**Setup:**
+1. Enable GitHub Pages in repository settings
+2. Set source to "GitHub Actions"
+3. The workflow will automatically deploy to `https://yourusername.github.io/quakeweather`
+
+**Backend Requirements:**
+- GitHub Pages only serves static files
+- Backend APIs must be deployed separately to Cloudflare Workers
+- Frontend automatically detects and uses deployed backend URL
+
+#### Option 3: Cloudflare Workers (Backend Only)
+
+For the API backend:
+```bash
+npx wrangler deploy
+```
+
+**Set Secrets:**
+```bash
+npx wrangler secret put OPENWEATHER_API_KEY
+npx wrangler secret put MAPBOX_TOKEN
+```
+
+---
+
+## User Experience
+
+### 🖱️ How to Use QuakeWeather
+
+1. **View Earthquakes**: Open the app to see clustered earthquake markers on the map
+2. **Filter Data**: Use the sidebar to select time window (hour/day/week/month) and magnitude range
+3. **Explore Clusters**: Click on large circles to zoom in and see individual earthquakes
+4. **Get Details**: Click individual earthquake markers to see popup with details
+5. **Weather & Insights**: Click "Show Weather & Insights" to get weather conditions and AI analysis
+6. **Mobile Navigation**: Use hamburger menu (☰) on mobile to access controls
+
+### 📱 Mobile Features
+
+- **Responsive Design**: Optimized for all screen sizes
+- **Collapsible Sidebar**: Hamburger menu for mobile navigation
+- **Touch-Friendly**: Large touch targets and smooth gestures
+- **Full-Screen Map**: Sidebar slides out of the way on mobile
+- **Responsive Popups**: Weather cards adapt to screen size
+
+### 🎨 UI Components
+
+- **Map Component**: Interactive Mapbox GL map with earthquake visualization
+- **Controls Sidebar**: Time window selector and magnitude filter
+- **PopupCard**: Earthquake details with weather integration button
+- **WeatherCard**: Current conditions, forecasts, and weather alerts
+- **InsightCard**: AI-generated contextual analysis
+- **Mobile Overlay**: Backdrop for mobile sidebar navigation
 
 ---
 
@@ -308,9 +448,40 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
+## Live Demo
+
+### 🌐 Production URLs
+
+- **Cloudflare Pages**: https://quakeweather.hesam.me
+- **GitHub Pages**: https://hesam.me/quakeweather
+- **Backend API**: https://quakeweather-api.smah0085.workers.dev
+
+### 🔧 Development URLs
+
+- **Local Frontend**: http://localhost:5173
+- **Local Backend**: http://localhost:8787
+
+---
+
 ## Support
 
-For issues, questions, or suggestions, please [open an issue](https://github.com/yourusername/quakeweather/issues) on GitHub.
+### 📚 Documentation
+
+- **Quick Start**: See `START_HERE.md` for immediate setup
+- **Deployment Guide**: See `HOW_TO_DEPLOY.md` for deployment options
+- **Troubleshooting**: See `TROUBLESHOOTING.md` for common issues
+- **Project Overview**: See `PROJECT_OVERVIEW.md` for technical details
+
+### 🐛 Issues & Questions
+
+For issues, questions, or suggestions, please [open an issue](https://github.com/eamaster/quakeweather/issues) on GitHub.
+
+### 🔑 API Keys
+
+**Current Working API Key**: `REMOVED_OPENWEATHER_API_KEY`
+- ✅ Works with OpenWeather One Call API 3.0
+- ✅ Works with OpenWeather Current Weather API
+- ✅ Includes historical weather data access
 
 ---
 
