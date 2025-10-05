@@ -448,6 +448,194 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
+## 🔮 Predict (Experimental) **NEW!**
+
+⚠️ **CRITICAL DISCLAIMER**: This feature provides **experimental educational probabilities** based on statistical patterns in seismic data. Earthquake prediction is **NOT scientifically reliable**. These probabilities must **NEVER** be used for safety-critical decisions.
+
+### What is Nowcasting?
+
+**Nowcasting** is a probabilistic assessment of earthquake likelihood in the near future (1-7 days) based on:
+- Recent seismicity patterns
+- ETAS (Epidemic Type Aftershock Sequence) modeling
+- Spatio-temporal clustering analysis
+- Historical earthquake rates
+
+This is **NOT deterministic prediction** - it provides statistical probabilities for educational purposes only.
+
+### Features
+
+#### 🗺️ **Nowcast Heatmap**
+- **Probabilistic grid**: Shows probability of M≥4.5 earthquake in next 7 days per cell
+- **ETAS-based**: Uses aftershock clustering physics
+- **Real-time**: Updates based on latest seismic activity
+- **Configurable**: Adjust horizon (1-7 days), M0 threshold (3.0-5.5), grid resolution
+
+#### 💫 **Aftershock Probability Ring**
+- **Event-specific**: Click any M≥5.0 earthquake to see aftershock probability
+- **Spatial ring**: Shows probability zone around mainshock
+- **Time-dependent**: Compute for 1h to 30 days ahead
+- **ETAS kernel**: Based on Omori-Utsu law and spatial decay
+
+#### 🤖 **AI Explanations** (Cohere-powered)
+- **Natural language**: Explains why certain areas have elevated probabilities
+- **Context-aware**: References recent significant earthquakes
+- **Educational**: Emphasizes statistical nature of probabilities
+
+#### 📊 **Model Metrics Dashboard**
+- **AUC & Brier scores**: Model discrimination and calibration performance
+- **Calibration plot**: Reliability diagram showing predicted vs observed frequencies
+- **Feature importance**: Which seismicity patterns matter most
+- **Training data stats**: Sample sizes, positive rates, evaluation dates
+
+### How to Use
+
+1. **Enable Predict Mode**: Click the "🔮 Predict (Experimental)" button (bottom-right)
+2. **Configure Parameters**:
+   - **Time Horizon**: 1-7 days (how far ahead to forecast)
+   - **Min Magnitude (M0)**: 3.0-5.5 (minimum magnitude for "event")
+   - **Grid Resolution**: 0.1°-1.0° (finer = more detailed, slower)
+3. **View Heatmap**: Blue (low) → Yellow → Orange → Red (high probability)
+4. **Check Aftershocks**: Click M≥5.0 earthquakes to see probability ring
+5. **Get AI Explanation**: Click "🤖 AI Explanation" for narrative summary
+6. **View Metrics**: Click "📊 View Model Metrics" to see model performance
+
+### Technical Details
+
+#### ETAS Model
+```typescript
+λ(t,x) = Σ K × exp(α(M - M₀)) × (t + c)^(-p) × (r² + d²)^(-q/2)
+```
+Where:
+- `K`: Overall productivity (~0.02)
+- `α`: Magnitude productivity (~1.1)
+- `p`: Temporal decay (Omori, ~1.2)
+- `c`: Temporal core (~0.01 days)
+- `q`: Spatial decay (~1.5)
+- `d`: Spatial core (~10 km)
+- `M₀`: Reference magnitude (3.0)
+
+#### Logistic Regression Features
+- `rate_7`, `rate_30`, `rate_90`: Events per day in last 7/30/90 days
+- `maxMag_7`, `maxMag_30`, `maxMag_90`: Max magnitude in windows
+- `time_since_last`: Days since last M≥M0 event
+- `etas`: ETAS intensity (λ) from kernel above
+
+#### Training Process
+1. **Data**: USGS catalog 2010-present for SE Asia (M≥4.0)
+2. **Labels**: Binary (1 if M≥4.5 event within 7 days, 0 otherwise)
+3. **Model**: L2-regularized logistic regression
+4. **Calibration**: Platt scaling for probability calibration
+5. **Validation**: Rolling time-split validation (no random CV)
+6. **Metrics**: AUC ~0.72, Brier ~0.016
+
+### API Endpoints
+
+#### `GET /api/predict`
+Compute nowcast probabilities for a grid.
+
+**Query Parameters**:
+- `bbox` (optional): `minLon,minLat,maxLon,maxLat`
+- `cellDeg` (optional): Grid cell size (default 0.25°)
+- `horizon` (optional): Days ahead (default 7)
+
+**Response**: Array of cells with probabilities, λ values, features
+
+**Rate Limit**: 30 req/10min per IP  
+**Cache**: 15 minutes
+
+#### `GET /api/aftershock`
+Compute aftershock probability ring around a mainshock.
+
+**Query Parameters**:
+- `lat`, `lon`, `mag`, `time`: Mainshock parameters (required)
+- `eventId` (optional): For caching
+- `m0` (optional): Min magnitude threshold (default 3.0)
+- `horizon` (optional): Days ahead (default 3 = 72h)
+- `radius` (optional): Ring radius in km (default 150)
+
+**Response**: Probability ring coordinates, statistics, ETAS λ
+
+**Rate Limit**: 30 req/10min per IP  
+**Cache**: 15 minutes
+
+#### `POST /api/explain`
+Generate AI narrative explaining predictions (Cohere).
+
+**Request Body**:
+```json
+{
+  "topCells": [{ "lat": 0, "lon": 0, "probability": 0.05 }, ...],
+  "recentEvents": [{ "lat": 0, "lon": 0, "mag": 5.0, "time": 123, "place": "..." }, ...]
+}
+```
+
+**Response**: Natural language explanation with disclaimer
+
+**Rate Limit**: 30 req/10min per IP  
+**Cache**: 15 minutes
+
+### Training Your Own Model
+
+```bash
+# Install dependencies (includes tsx)
+npm install
+
+# Run unit tests
+npm run test:etas
+
+# Train model (requires internet for USGS data)
+npm run train:model
+```
+
+**Output**:
+- `public/models/nowcast.json` - Trained model with coefficients & calibration
+- `public/models/nowcast_eval.json` - Performance metrics & reliability curve
+
+**Tuning**: Edit `tools/backtest/config.ts` to change:
+- Region (bbox)
+- Grid resolution
+- Time windows
+- ETAS parameters
+
+### Limitations & Disclaimers
+
+⚠️ **This is an experimental educational tool. Earthquake prediction is NOT scientifically reliable.**
+
+**Known Limitations**:
+- **Simple model**: Logistic regression, not deep learning or physics-based
+- **Limited features**: Only seismicity, no geophysical data (stress, GPS, etc.)
+- **Regional**: Trained on specific regions, may not generalize globally
+- **No guarantees**: Past patterns don't ensure future behavior
+- **Educational only**: Never use for evacuation, construction, insurance, or any safety decision
+
+**Appropriate Uses**:
+- ✅ Learning about seismic clustering and aftershock patterns
+- ✅ Understanding probabilistic forecasting concepts
+- ✅ Exploring ETAS models and Omori's law
+- ✅ Data science / geoscience education
+
+**Inappropriate Uses**:
+- ❌ Evacuation planning or emergency response
+- ❌ Building safety assessments
+- ❌ Insurance or financial decisions
+- ❌ Public safety announcements
+- ❌ Any safety-critical application
+
+### Scientific Background
+
+**Key Concepts**:
+- **ETAS**: Epidemic Type Aftershock Sequence models cluster earthquakes in space and time
+- **Omori's Law**: Aftershock rate decays as `(t + c)^(-p)` where p ≈ 1.0-1.3
+- **Gutenberg-Richter**: Magnitude-frequency follows `log N = a - bM`
+- **Poisson Process**: Background seismicity modeled as random point process
+
+**References**:
+- Ogata (1988): "Statistical Models for Earthquake Occurrences"
+- Reasenberg & Jones (1989): "Earthquake Hazard After a Mainshock"
+- Field et al. (2013): "Uniform California Earthquake Rupture Forecast (UCERF3)"
+
+---
+
 ## Live Demo
 
 ### 🌐 Production URLs

@@ -112,3 +112,63 @@ export interface InsightResponse {
 
 export type FeedType = 'all_hour' | 'all_day' | '2.5_day' | '4.5_week' | 'significant_month';
 
+// Prediction types
+export interface PredictCell {
+  lat: number;
+  lon: number;
+  probability: number;
+  lambda: number;
+  features: Record<string, number>;
+}
+
+export interface PredictResponse {
+  type: 'nowcast';
+  generated: string;
+  model_version: string;
+  model_trained: string;
+  horizon_days: number;
+  M0_threshold: number;
+  bbox: [number, number, number, number];
+  cellDeg: number;
+  total_cells: number;
+  cells: PredictCell[];
+  max_probability: number;
+  mean_probability: number;
+  disclaimer: string;
+}
+
+export interface AftershockResponse {
+  type: 'aftershock';
+  generated: string;
+  mainshock: {
+    eventId: string;
+    lat: number;
+    lon: number;
+    mag: number;
+    time: number;
+  };
+  parameters: {
+    m0_threshold: number;
+    horizon_days: number;
+    radius_km: number;
+  };
+  center_probability: number;
+  center_lambda: number;
+  ring: Array<{ lat: number; lon: number; probability: number }>;
+  statistics: {
+    max_probability: number;
+    mean_probability: number;
+    min_probability: number;
+  };
+  recent_events_count: number;
+  disclaimer: string;
+}
+
+export interface ExplainResponse {
+  explanation: string;
+  generated: string;
+  top_cells_analyzed: any[];
+  recent_events_analyzed: any[];
+  disclaimer: string;
+}
+

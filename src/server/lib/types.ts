@@ -1,6 +1,7 @@
 export interface Env {
   OPENWEATHER_API_KEY: string;
   MAPBOX_TOKEN: string;
+  COHERE_API_KEY?: string;
   CACHE_KV?: KVNamespace;
 }
 
