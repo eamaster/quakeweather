@@ -235,8 +235,13 @@ predictRoute.get('/', async (c) => {
       };
     });
     
+    const filteredCells = cells.filter(c => c.probability > 0.0001);
+    console.log(`Predict API: Generated ${cells.length} cells, ${filteredCells.length} after filtering`);
+    console.log(`Max probability: ${Math.max(...cells.map(c => c.probability))}`);
+    console.log(`Sample cells:`, filteredCells.slice(0, 3));
+    
     const result = {
-      type: 'nowcast',
+      type: 'nowcast' as const,
       generated: new Date().toISOString(),
       model_version: model.version,
       model_trained: model.trained,
@@ -245,7 +250,7 @@ predictRoute.get('/', async (c) => {
       bbox,
       cellDeg,
       total_cells: cells.length,
-      cells: cells.filter(c => c.probability > 0.001),  // Only return significant probabilities
+      cells: filteredCells,
       max_probability: Math.max(...cells.map(c => c.probability)),
       mean_probability: cells.reduce((sum, c) => sum + c.probability, 0) / cells.length,
       disclaimer: 'EXPERIMENTAL PROBABILITIES - Educational use only. NOT for safety-critical decisions.',

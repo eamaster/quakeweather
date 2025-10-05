@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { PredictResponse, ExplainResponse, QuakeFeature } from '../types';
+import { PredictResponse, ExplainResponse } from '../types';
 
 interface PredictPanelProps {
   onShowHeatmap: (data: PredictResponse | null) => void;
   onShowAftershock: (data: any) => void;
   onShowMetrics: () => void;
-  recentQuakes: QuakeFeature[];
 }
 
-export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowAftershock, onShowMetrics, recentQuakes }: PredictPanelProps) {
+export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowAftershock, onShowMetrics }: PredictPanelProps) {
   // onShowAftershock will be used when aftershock ring functionality is implemented
   const [isOpen, setIsOpen] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -54,7 +53,11 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         ?.sort((a, b) => b.probability - a.probability)
         .slice(0, 5) || [];
       
-      const recentEventsData = recentQuakes.slice(0, 5).map(q => ({
+      // Get recent quakes from the Map component's data
+      const mapElement = document.querySelector('[data-quake-data]');
+      const quakeData = mapElement ? JSON.parse(mapElement.getAttribute('data-quake-data') || '[]') : [];
+      
+      const recentEventsData = quakeData.slice(0, 5).map((q: any) => ({
         lat: q.geometry.coordinates[1],
         lon: q.geometry.coordinates[0],
         mag: q.properties.mag,

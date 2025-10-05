@@ -299,7 +299,7 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mapContainer} className="absolute inset-0" />
+      <div ref={mapContainer} className="absolute inset-0" data-quake-data={JSON.stringify(quakeData || [])} />
       
       {/* Loading indicator */}
       {isLoading && (

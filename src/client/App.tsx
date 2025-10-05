@@ -3,7 +3,7 @@ import Map from './components/Map';
 import Controls from './components/Controls';
 import PredictPanel from './components/PredictPanel';
 import MetricsDrawer from './components/MetricsDrawer';
-import { FeedType, QuakeFeature } from './types';
+import { FeedType } from './types';
 
 function App() {
   const [isDark, setIsDark] = useState(false);
@@ -11,7 +11,7 @@ function App() {
   const [magnitudeRange, setMagnitudeRange] = useState<[number, number]>([0, 10]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMetrics, setShowMetrics] = useState(false);
-  const [recentQuakes] = useState<QuakeFeature[]>([]);
+  // Recent quakes are now accessed from Map component data
   const [predictionData, setPredictionData] = useState<any>(null);
   const [aftershockData, setAftershockData] = useState<any>(null);
 
@@ -132,7 +132,6 @@ function App() {
               setAftershockData(data);
             }}
             onShowMetrics={() => setShowMetrics(true)}
-            recentQuakes={recentQuakes}
           />
         </div>
       </div>

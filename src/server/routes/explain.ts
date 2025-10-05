@@ -104,21 +104,20 @@ Write a brief (3-4 sentences) explanation for users that:
 
 Keep it accessible, factual, and include the critical disclaimer about not using this for safety decisions.`;
 
-    // Call Cohere API
-    const cohereResponse = await fetch('https://api.cohere.ai/v1/generate', {
+    // Call Cohere v2 Chat API
+    const cohereResponse = await fetch('https://api.cohere.com/v2/chat', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${cohereApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'command',
-        prompt,
-        max_tokens: 300,
-        temperature: 0.7,
-        k: 0,
-        stop_sequences: [],
-        return_likelihoods: 'NONE',
+        model: 'command-a-03-2025',
+        messages: [
+          { role: 'system', content: 'You are a seismology narrator. Write concise, factual summaries. Summarize patterns in probabilities and recent quakes. Do NOT claim deterministic prediction; probabilities only. Educational tone. 1 short paragraph + 3 bullet points. Avoid safety advice.' },
+          { role: 'user', content: prompt }
+        ],
+        stream: false
       }),
     });
     
@@ -129,7 +128,10 @@ Keep it accessible, factual, and include the critical disclaimer about not using
     }
     
     const cohereData = await cohereResponse.json() as any;
-    const explanation = cohereData.generations?.[0]?.text?.trim() || 'Unable to generate explanation';
+    // Extract text from v2 Chat response
+    const explanation = cohereData?.message?.content?.map?.((p: any) => ('text' in p ? p.text : '')).join(' ').trim() ??
+      cohereData?.text ??
+      'Unable to generate explanation';
     
     const result = {
       explanation,
