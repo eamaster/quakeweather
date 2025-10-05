@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PredictResponse, ExplainResponse } from '../types';
 
@@ -14,7 +14,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
   const [isEnabled, setIsEnabled] = useState(false);
   const [horizon, setHorizon] = useState(7);
   const [M0, setM0] = useState(4.5);
-  const [gridSize, setGridSize] = useState(0.25);
+  const [gridSize, setGridSize] = useState(1.0); // Start with safer default
   const [showExplanation, setShowExplanation] = useState(false);
   
   // Fetch nowcast predictions
@@ -111,12 +111,13 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
     }
   };
   
-  // Update heatmap when data changes
-  useState(() => {
+  // Update heatmap when prediction data changes
+  useEffect(() => {
     if (predictData && isEnabled) {
       onShowHeatmap(predictData);
     }
-  });
+  }, [predictData, isEnabled, onShowHeatmap]);
+  
   
   return (
     <>
@@ -245,9 +246,14 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
                   </p>
                 )}
                 {predictError && (
-                  <p className="text-sm text-red-600 dark:text-red-400">
-                    ❌ Error: {(predictError as Error).message}
-                  </p>
+                  <div className="text-sm text-red-600 dark:text-red-400">
+                    <p>❌ Error: {(predictError as Error).message}</p>
+                    {(predictError as Error).message.includes('Grid too large') && (
+                      <p className="text-xs mt-1 text-orange-600 dark:text-orange-400">
+                        💡 Try a larger cell size (1° or 0.5°) or smaller region.
+                      </p>
+                    )}
+                  </div>
                 )}
                 {predictData && (
                   <div className="space-y-2">
