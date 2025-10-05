@@ -102,6 +102,8 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
       );
 
       // Store original data for popup access
+      console.log('Storing original quake data:', filteredFeatures.length, 'earthquakes');
+      console.log('Sample earthquake data:', filteredFeatures[0]);
       setOriginalQuakeData(filteredFeatures);
 
       const geojson = {
@@ -224,8 +226,15 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
         if (!e.features || !e.features[0]) return;
         const feature = e.features[0] as any;
         
+        console.log('Feature ID:', feature.id);
+        console.log('Feature properties:', feature.properties);
+        console.log('Available original data IDs:', originalQuakeData.map(q => q.id));
+        
         // Find the original earthquake data by ID to preserve depth information
         const originalQuake = originalQuakeData.find(q => q.id === feature.id);
+        
+        console.log('Found original quake:', originalQuake);
+        
         const quake: QuakeFeature = originalQuake || {
           type: 'Feature',
           id: feature.id,
