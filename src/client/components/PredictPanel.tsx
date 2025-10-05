@@ -17,20 +17,19 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
   const [gridSize, setGridSize] = useState(1.0); // Start with safer default
   const [showExplanation, setShowExplanation] = useState(false);
   
-  // Fetch nowcast predictions
+  // Fetch nowcast predictions with debouncing
   const { data: predictData, isLoading: predictLoading, error: predictError, refetch } = useQuery<PredictResponse>({
     queryKey: ['predict', horizon, M0, gridSize],
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       const apiBase = window.location.hostname === 'hesam.me' 
         ? 'https://quakeweather-api.smah0085.workers.dev'
         : '';
-      const timestamp = Date.now();
       const response = await fetch(
-        `${apiBase}/api/predict?horizon=${horizon}&cellDeg=${gridSize}&_t=${timestamp}`,
+        `${apiBase}/api/predict?horizon=${horizon}&cellDeg=${gridSize}`,
         {
           headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
+            'Cache-Control': 'max-age=900', // Cache for 15 minutes
           },
         }
       );
@@ -48,7 +47,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
   
   // Fetch AI explanation
   const { data: explainData, isLoading: explainLoading } = useQuery<ExplainResponse>({
-    queryKey: ['explain', predictData?.generated],
+    queryKey: ['explain', predictData?.generated || ''],
     queryFn: async () => {
       if (!predictData) throw new Error('No prediction data');
       
@@ -56,8 +55,8 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         ? 'https://quakeweather-api.smah0085.workers.dev'
         : '';
         
-      const topCells = predictData.cells
-        ?.sort((a, b) => b.probability - a.probability)
+      const topCells = (predictData as PredictResponse).cells
+        ?.sort((a: any, b: any) => b.probability - a.probability)
         .slice(0, 5) || [];
       
       // Get recent quakes from the Map component's data
@@ -78,13 +77,11 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         throw new Error('No prediction cells available for explanation');
       }
       
-      const timestamp = Date.now();
-      const response = await fetch(`${apiBase}/api/explain?_t=${timestamp}`, {
+      const response = await fetch(`${apiBase}/api/explain`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
+          'Cache-Control': 'max-age=900', // Cache for 15 minutes
         },
         body: JSON.stringify({ topCells, recentEvents: recentEventsData }),
       });
@@ -114,7 +111,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
   // Update heatmap when prediction data changes
   useEffect(() => {
     if (predictData && isEnabled) {
-      onShowHeatmap(predictData);
+      onShowHeatmap(predictData as PredictResponse);
     }
   }, [predictData, isEnabled, onShowHeatmap]);
   
@@ -261,10 +258,10 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
                       ✓ Nowcast Active
                     </p>
                     <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                      <p>• Cells: {predictData.total_cells}</p>
-                      <p>• Max Prob: {(predictData.max_probability * 100).toFixed(2)}%</p>
-                      <p>• Mean Prob: {(predictData.mean_probability * 100).toFixed(3)}%</p>
-                      <p>• Model: {new Date(predictData.model_trained).toLocaleDateString()}</p>
+                      <p>• Cells: {(predictData as PredictResponse).total_cells}</p>
+                      <p>• Max Prob: {((predictData as PredictResponse).max_probability * 100).toFixed(2)}%</p>
+                      <p>• Mean Prob: {((predictData as PredictResponse).mean_probability * 100).toFixed(3)}%</p>
+                      <p>• Model: {new Date((predictData as PredictResponse).model_trained).toLocaleDateString()}</p>
                     </div>
                   </div>
                 )}

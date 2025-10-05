@@ -7,7 +7,7 @@ import { etasGrid, parseUSGSGeoJSON } from '../lib/etas';
 const predictRoute = new Hono<{ Bindings: Env }>();
 
 // Rate limiter: 30 requests per 10 minutes per IP
-const rateLimiter = new RateLimiter(30, 600000);
+const rateLimiter = new RateLimiter(100, 600000); // 100 requests per 10 minutes
 
 interface PredictModel {
   version: string;
@@ -173,9 +173,9 @@ predictRoute.get('/', async (c) => {
     const cacheKey = `predict:${bbox.join(',')}:${cellDeg}:${horizon}`;
     const cache = new CacheManager();
     
-    // Check cache (15 min TTL)
+    // Check cache (30 min TTL)
     const cached = await cache.get(cacheKey);
-    if (cached && !cache.isStale(cacheKey, 900000)) {
+    if (cached && !cache.isStale(cacheKey, 1800000)) {
       return c.json(cached, {
         headers: {
           'Cache-Control': 'public, max-age=900',
@@ -254,14 +254,12 @@ predictRoute.get('/', async (c) => {
       disclaimer: 'EXPERIMENTAL PROBABILITIES - Educational use only. NOT for safety-critical decisions.',
     };
     
-    // Cache result
-    await cache.set(cacheKey, result, { ttl: 900000 });
+    // Cache result (30 min TTL)
+    await cache.set(cacheKey, result, { ttl: 1800000 });
     
     return c.json(result, {
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
+        'Cache-Control': 'public, max-age=1800', // 30 minutes
         'X-Cache': 'MISS',
       },
     });
