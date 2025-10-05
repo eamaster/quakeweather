@@ -10,11 +10,13 @@ import explainRoute from './routes/explain';
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Enable CORS with specific origins
+// Enable CORS with specific origins and cache-busting
 app.use('*', cors({
   origin: ['https://hesam.me', 'https://quakeweather.smah0085.workers.dev', 'http://localhost:5173', 'http://127.0.0.1:5173'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: false,
+  maxAge: 0, // Disable caching for CORS preflight
 }));
 
 // Health check

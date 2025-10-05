@@ -24,8 +24,15 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
       const apiBase = window.location.hostname === 'hesam.me' 
         ? 'https://quakeweather-api.smah0085.workers.dev'
         : '';
+      const timestamp = Date.now();
       const response = await fetch(
-        `${apiBase}/api/predict?horizon=${horizon}&cellDeg=${gridSize}`
+        `${apiBase}/api/predict?horizon=${horizon}&cellDeg=${gridSize}&_t=${timestamp}`,
+        {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+        }
       );
       if (!response.ok) {
         if (response.status === 429) {
@@ -71,9 +78,14 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         throw new Error('No prediction cells available for explanation');
       }
       
-      const response = await fetch(`${apiBase}/api/explain`, {
+      const timestamp = Date.now();
+      const response = await fetch(`${apiBase}/api/explain?_t=${timestamp}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
         body: JSON.stringify({ topCells, recentEvents: recentEventsData }),
       });
       

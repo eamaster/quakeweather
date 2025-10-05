@@ -261,7 +261,9 @@ predictRoute.get('/', async (c) => {
     
     return c.json(result, {
       headers: {
-        'Cache-Control': 'public, max-age=900',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
         'X-Cache': 'MISS',
       },
     });
