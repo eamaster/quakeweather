@@ -66,14 +66,19 @@ export async function fetchQuakeFeed(
 
   const data: QuakeCollection = await response.json();
 
-  // Add context scores
-  data.features = data.features.map((feature) => ({
-    ...feature,
-    properties: {
-      ...feature.properties,
-      contextScore: calculateContextScore(feature),
-    },
-  }));
+  // Add context scores and log depth information for debugging
+  data.features = data.features.map((feature) => {
+    const depth = feature.geometry.coordinates[2];
+    console.log(`Earthquake ${feature.id}: ${feature.properties.place} - Depth: ${depth} km`);
+    
+    return {
+      ...feature,
+      properties: {
+        ...feature.properties,
+        contextScore: calculateContextScore(feature),
+      },
+    };
+  });
 
   // Cache the result
   const newEtag = response.headers.get('ETag') || undefined;

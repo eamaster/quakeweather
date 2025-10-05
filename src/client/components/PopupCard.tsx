@@ -14,6 +14,15 @@ export default function PopupCard({ quake, onClose }: PopupCardProps) {
   const depth = quake.geometry.coordinates[2]?.toFixed(1) || '0.0';
   const time = new Date(quake.properties.time);
   const place = quake.properties.place || 'Unknown location';
+  
+  // Debug logging
+  console.log('PopupCard - Earthquake data:', {
+    id: quake.id,
+    place: place,
+    coordinates: quake.geometry.coordinates,
+    depth: quake.geometry.coordinates[2],
+    formattedDepth: depth
+  });
 
   const getMagnitudeColor = (magnitude: number): string => {
     if (magnitude >= 6) return 'text-purple-600 dark:text-purple-400';
