@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useQuery } from '@tanstack/react-query';
-import { QuakeCollection, QuakeFeature, FeedType } from '../types';
+import { QuakeCollection, QuakeFeature, FeedType, PredictResponse, AftershockResponse } from '../types';
 import PopupCard from './PopupCard';
+import { addNowcastHeatmap, addAftershockRing, removePredictionLayers } from '../utils/predictionLayers';
 
 // Mapbox token - will be injected at build time
 const MAPBOX_TOKEN = 'REMOVED_MAPBOX_TOKEN';
@@ -12,6 +13,8 @@ mapboxgl.accessToken = MAPBOX_TOKEN;
 interface MapProps {
   selectedFeed: FeedType;
   magnitudeRange: [number, number];
+  predictionData?: PredictResponse | null;
+  aftershockData?: AftershockResponse | null;
 }
 
 // Helper functions for magnitude styling (used in map paint properties)
@@ -27,7 +30,7 @@ interface MapProps {
 //   return 4 + mag * 3;
 // }
 
-export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
+export default function Map({ selectedFeed, magnitudeRange, predictionData, aftershockData }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   // const popup = useRef<mapboxgl.Popup | null>(null);
@@ -272,6 +275,23 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
       });
     }
   }, [quakeData, magnitudeRange]);
+
+  // Handle prediction layers
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Remove existing prediction layers
+    removePredictionLayers(map.current);
+
+    // Add new prediction layers
+    if (predictionData) {
+      addNowcastHeatmap(map.current, predictionData);
+    }
+    
+    if (aftershockData) {
+      addAftershockRing(map.current, aftershockData);
+    }
+  }, [predictionData, aftershockData]);
 
   return (
     <div className="relative w-full h-full">

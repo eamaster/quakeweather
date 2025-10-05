@@ -12,6 +12,8 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMetrics, setShowMetrics] = useState(false);
   const [recentQuakes] = useState<QuakeFeature[]>([]);
+  const [predictionData, setPredictionData] = useState<any>(null);
+  const [aftershockData, setAftershockData] = useState<any>(null);
 
   useEffect(() => {
     // Check system preference
@@ -112,13 +114,22 @@ function App() {
 
         {/* Map */}
         <div className="flex-1 relative">
-          <Map selectedFeed={selectedFeed} magnitudeRange={magnitudeRange} />
+          <Map 
+            selectedFeed={selectedFeed} 
+            magnitudeRange={magnitudeRange}
+            predictionData={predictionData}
+            aftershockData={aftershockData}
+          />
           
           {/* Predict Panel */}
           <PredictPanel 
             onShowHeatmap={(data) => {
-              // Handle heatmap display - this would integrate with Map component
               console.log('Heatmap data:', data);
+              setPredictionData(data);
+            }}
+            onShowAftershock={(data) => {
+              console.log('Aftershock data:', data);
+              setAftershockData(data);
             }}
             onShowMetrics={() => setShowMetrics(true)}
             recentQuakes={recentQuakes}

@@ -4,11 +4,13 @@ import { PredictResponse, ExplainResponse, QuakeFeature } from '../types';
 
 interface PredictPanelProps {
   onShowHeatmap: (data: PredictResponse | null) => void;
+  onShowAftershock: (data: any) => void;
   onShowMetrics: () => void;
   recentQuakes: QuakeFeature[];
 }
 
-export default function PredictPanel({ onShowHeatmap, onShowMetrics, recentQuakes }: PredictPanelProps) {
+export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowAftershock, onShowMetrics, recentQuakes }: PredictPanelProps) {
+  // onShowAftershock will be used when aftershock ring functionality is implemented
   const [isOpen, setIsOpen] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [horizon, setHorizon] = useState(7);

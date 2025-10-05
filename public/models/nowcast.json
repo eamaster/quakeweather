@@ -1,0 +1,26 @@
+{
+  "intercept": -3.12,
+  "coeffs": {
+    "rate_7": 0.45,
+    "rate_30": 0.22,
+    "etas": 0.78,
+    "time_since_last": -0.31,
+    "maxMag_30": 0.11,
+    "pressure_anom": 0.02,
+    "wind_max_24h": 0.01
+  },
+  "calibration": {
+    "type": "platt",
+    "A": 1.2,
+    "B": 0.1
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "trained_at": "2025-01-05T12:00:00Z",
+    "horizon_days": 7,
+    "M0_threshold": 4.5,
+    "bbox": [-180, -90, 180, 90],
+    "cellDeg": 0.5,
+    "features": ["rate_7", "rate_30", "etas", "time_since_last", "maxMag_30", "pressure_anom", "wind_max_24h"]
+  }
+}
