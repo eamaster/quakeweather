@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import Map from './components/Map';
 import Controls from './components/Controls';
-import { FeedType } from './types';
+import PredictPanel from './components/PredictPanel';
+import MetricsDrawer from './components/MetricsDrawer';
+import { FeedType, QuakeFeature } from './types';
 
 function App() {
   const [isDark, setIsDark] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState<FeedType>('all_day');
   const [magnitudeRange, setMagnitudeRange] = useState<[number, number]>([0, 10]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showMetrics, setShowMetrics] = useState(false);
+  const [recentQuakes] = useState<QuakeFeature[]>([]);
 
   useEffect(() => {
     // Check system preference
@@ -109,8 +113,24 @@ function App() {
         {/* Map */}
         <div className="flex-1 relative">
           <Map selectedFeed={selectedFeed} magnitudeRange={magnitudeRange} />
+          
+          {/* Predict Panel */}
+          <PredictPanel 
+            onShowHeatmap={(data) => {
+              // Handle heatmap display - this would integrate with Map component
+              console.log('Heatmap data:', data);
+            }}
+            onShowMetrics={() => setShowMetrics(true)}
+            recentQuakes={recentQuakes}
+          />
         </div>
       </div>
+      
+      {/* Metrics Drawer */}
+      <MetricsDrawer 
+        isOpen={showMetrics}
+        onClose={() => setShowMetrics(false)}
+      />
 
       {/* Footer disclaimer */}
       <footer className="bg-yellow-50 dark:bg-yellow-900/20 border-t border-yellow-200 dark:border-yellow-800 z-10">
