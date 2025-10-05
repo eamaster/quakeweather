@@ -32,7 +32,7 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
   const map = useRef<mapboxgl.Map | null>(null);
   // const popup = useRef<mapboxgl.Popup | null>(null);
   const [selectedQuake, setSelectedQuake] = useState<QuakeFeature | null>(null);
-  const [originalQuakeData, setOriginalQuakeData] = useState<QuakeFeature[]>([]);
+  const originalQuakeDataRef = useRef<QuakeFeature[]>([]);
 
   // Fetch earthquake data
   const { data: quakeData, isLoading, error } = useQuery<QuakeCollection>({
@@ -102,7 +102,7 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
       );
 
       // Store original data for popup access
-      setOriginalQuakeData(filteredFeatures);
+      originalQuakeDataRef.current = filteredFeatures;
 
       const geojson = {
         type: 'FeatureCollection' as const,
@@ -228,7 +228,7 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
         const featureCoords = feature.geometry.coordinates;
         const featureMag = feature.properties.mag;
         
-        const originalQuake = originalQuakeData.find(q => {
+        const originalQuake = originalQuakeDataRef.current.find(q => {
           const qCoords = q.geometry.coordinates;
           const qMag = q.properties.mag;
           
@@ -253,7 +253,7 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
         console.log('Original quake coordinates:', originalQuake?.geometry.coordinates);
         console.log('Feature coordinates:', feature.geometry.coordinates);
         console.log('Final coordinates:', quake.geometry.coordinates);
-        console.log('Original quake data length:', originalQuakeData.length);
+        console.log('Original quake data length:', originalQuakeDataRef.current.length);
         setSelectedQuake(quake);
       });
 
