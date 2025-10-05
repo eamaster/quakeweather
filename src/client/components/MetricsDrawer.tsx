@@ -7,25 +7,29 @@ interface MetricsDrawerProps {
 
 interface ModelEvaluation {
   version: string;
-  evaluated: string;
-  dataset: {
-    train_samples: number;
-    val_samples: number;
-    positive_rate: number;
-  };
+  evaluation_date: string;
   metrics: {
-    raw: { auc: number; brier: number };
-    calibrated: { auc: number; brier: number };
+    auc: number;
+    brier_score: number;
+    precision: number;
+    recall: number;
+    f1_score: number;
   };
-  reliability: Array<{
-    predMean: number;
-    obsMean: number;
-    count: number;
-  }>;
-  feature_importance: Array<{
-    name: string;
-    coeff: number;
-  }>;
+  calibration: {
+    reliability_bins: Array<{
+      bin: number;
+      count: number;
+      mean_prob: number;
+      observed_rate: number;
+    }>;
+  };
+  training_info: {
+    total_samples: number;
+    positive_samples: number;
+    negative_samples: number;
+    training_period: string;
+    validation_period: string;
+  };
 }
 
 export default function MetricsDrawer({ isOpen, onClose }: MetricsDrawerProps) {
@@ -53,33 +57,30 @@ export default function MetricsDrawer({ isOpen, onClose }: MetricsDrawerProps) {
         // Placeholder metrics
         setMetrics({
           version: '1.0.0',
-          evaluated: new Date().toISOString(),
-          dataset: {
-            train_samples: 50000,
-            val_samples: 10000,
-            positive_rate: 0.015,
+          evaluation_date: new Date().toISOString(),
+          training_info: {
+            total_samples: 50000,
+            positive_samples: 750,
+            negative_samples: 49250,
+            training_period: '2010-01-01 to 2024-12-31',
+            validation_period: '2024-10-01 to 2024-12-31',
           },
           metrics: {
-            raw: { auc: 0.72, brier: 0.018 },
-            calibrated: { auc: 0.72, brier: 0.016 },
+            auc: 0.72,
+            brier_score: 0.016,
+            precision: 0.65,
+            recall: 0.58,
+            f1_score: 0.61,
           },
-          reliability: [
-            { predMean: 0.005, obsMean: 0.006, count: 1200 },
-            { predMean: 0.015, obsMean: 0.014, count: 800 },
-            { predMean: 0.025, obsMean: 0.028, count: 600 },
-            { predMean: 0.035, obsMean: 0.031, count: 400 },
-            { predMean: 0.050, obsMean: 0.055, count: 200 },
-          ],
-          feature_importance: [
-            { name: 'etas', coeff: 0.78 },
-            { name: 'rate_7', coeff: 0.45 },
-            { name: 'maxMag_7', coeff: 0.35 },
-            { name: 'time_since_last', coeff: -0.31 },
-            { name: 'maxMag_30', coeff: 0.25 },
-            { name: 'rate_30', coeff: 0.22 },
-            { name: 'maxMag_90', coeff: 0.18 },
-            { name: 'rate_90', coeff: 0.15 },
-          ],
+          calibration: {
+            reliability_bins: [
+              { bin: 1, count: 1200, mean_prob: 0.005, observed_rate: 0.006 },
+              { bin: 2, count: 800, mean_prob: 0.015, observed_rate: 0.014 },
+              { bin: 3, count: 600, mean_prob: 0.025, observed_rate: 0.028 },
+              { bin: 4, count: 400, mean_prob: 0.035, observed_rate: 0.031 },
+              { bin: 5, count: 200, mean_prob: 0.050, observed_rate: 0.055 },
+            ],
+          },
         });
       }
     } catch (err) {
@@ -139,10 +140,10 @@ export default function MetricsDrawer({ isOpen, onClose }: MetricsDrawerProps) {
                   📁 Dataset
                 </h3>
                 <div className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
-                  <p>• Training samples: {metrics.dataset.train_samples.toLocaleString()}</p>
-                  <p>• Validation samples: {metrics.dataset.val_samples.toLocaleString()}</p>
-                  <p>• Positive rate: {(metrics.dataset.positive_rate * 100).toFixed(2)}%</p>
-                  <p>• Evaluated: {new Date(metrics.evaluated).toLocaleDateString()}</p>
+                  <p>• Total samples: {metrics.training_info.total_samples.toLocaleString()}</p>
+                  <p>• Positive samples: {metrics.training_info.positive_samples.toLocaleString()}</p>
+                  <p>• Positive rate: {((metrics.training_info.positive_samples / metrics.training_info.total_samples) * 100).toFixed(2)}%</p>
+                  <p>• Evaluated: {new Date(metrics.evaluation_date).toLocaleDateString()}</p>
                 </div>
               </div>
               
@@ -153,27 +154,27 @@ export default function MetricsDrawer({ isOpen, onClose }: MetricsDrawerProps) {
                 </h3>
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-1">AUC (Raw)</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      {metrics.metrics.raw.auc.toFixed(3)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-1">AUC (Cal.)</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-1">AUC</p>
                     <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                      {metrics.metrics.calibrated.auc.toFixed(3)}
+                      {metrics.metrics.auc.toFixed(3)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-1">Brier (Raw)</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      {metrics.metrics.raw.brier.toFixed(4)}
+                    <p className="text-gray-600 dark:text-gray-400 mb-1">Brier Score</p>
+                    <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                      {metrics.metrics.brier_score.toFixed(3)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-1">Brier (Cal.)</p>
-                    <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                      {metrics.metrics.calibrated.brier.toFixed(4)}
+                    <p className="text-gray-600 dark:text-gray-400 mb-1">Precision</p>
+                    <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                      {metrics.metrics.precision.toFixed(3)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-1">Recall</p>
+                    <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                      {metrics.metrics.recall.toFixed(3)}
                     </p>
                   </div>
                 </div>
@@ -194,9 +195,9 @@ export default function MetricsDrawer({ isOpen, onClose }: MetricsDrawerProps) {
                     <line x1="0" y1="200" x2="200" y2="0" stroke="#9CA3AF" strokeWidth="1" strokeDasharray="4,4" />
                     
                     {/* Reliability points */}
-                    {metrics.reliability.map((bin, i) => {
-                      const x = bin.predMean * 2000;
-                      const y = 200 - bin.obsMean * 2000;
+                    {metrics.calibration.reliability_bins.map((bin, i) => {
+                      const x = bin.mean_prob * 2000;
+                      const y = 200 - bin.observed_rate * 2000;
                       const size = Math.log(bin.count + 1) * 1.5;
                       return (
                         <circle
@@ -224,37 +225,6 @@ export default function MetricsDrawer({ isOpen, onClose }: MetricsDrawerProps) {
                 </p>
               </div>
               
-              {/* Feature Importance */}
-              <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                <h3 className="font-semibold text-sm text-gray-900 dark:text-white mb-2">
-                  🎯 Feature Importance
-                </h3>
-                <div className="space-y-2">
-                  {metrics.feature_importance.map((feat, i) => {
-                    const absCoeff = Math.abs(feat.coeff);
-                    const maxCoeff = Math.max(...metrics.feature_importance.map(f => Math.abs(f.coeff)));
-                    const width = (absCoeff / maxCoeff) * 100;
-                    const isPositive = feat.coeff > 0;
-                    
-                    return (
-                      <div key={i}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-gray-700 dark:text-gray-300">{feat.name}</span>
-                          <span className={`font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {feat.coeff > 0 ? '+' : ''}{feat.coeff.toFixed(3)}
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${isPositive ? 'bg-green-500' : 'bg-red-500'}`}
-                            style={{ width: `${width}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
             </>
           )}
         </div>
