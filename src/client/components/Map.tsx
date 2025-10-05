@@ -232,10 +232,10 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
           const qCoords = q.geometry.coordinates;
           const qMag = q.properties.mag;
           
-          // Match by coordinates (with small tolerance) and magnitude
-          const coordMatch = Math.abs(qCoords[0] - featureCoords[0]) < 0.001 && 
-                            Math.abs(qCoords[1] - featureCoords[1]) < 0.001;
-          const magMatch = Math.abs(qMag - featureMag) < 0.1;
+          // Match by coordinates (with larger tolerance for precision issues) and magnitude
+          const coordMatch = Math.abs(qCoords[0] - featureCoords[0]) < 0.01 && 
+                            Math.abs(qCoords[1] - featureCoords[1]) < 0.01;
+          const magMatch = Math.abs(qMag - featureMag) < 0.2;
           
           return coordMatch && magMatch;
         });
@@ -250,7 +250,10 @@ export default function Map({ selectedFeed, magnitudeRange }: MapProps) {
         
         console.log('Individual earthquake clicked:', quake.properties.place, quake.properties.mag);
         console.log('Found original quake:', !!originalQuake);
+        console.log('Original quake coordinates:', originalQuake?.geometry.coordinates);
+        console.log('Feature coordinates:', feature.geometry.coordinates);
         console.log('Final coordinates:', quake.geometry.coordinates);
+        console.log('Original quake data length:', originalQuakeData.length);
         setSelectedQuake(quake);
       });
 
