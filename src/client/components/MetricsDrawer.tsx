@@ -49,8 +49,11 @@ export default function MetricsDrawer({ isOpen, onClose }: MetricsDrawerProps) {
     
     try {
       // Try to load from deployed model first, fallback to placeholder
-      // Model is served from public/models/ at root path (not sub-path)
-      const response = await fetch('/models/nowcast_eval.json');
+      // Model is served from public/models/ with base path
+      const baseUrl = import.meta.env.BASE_URL || '/';
+      const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+      const modelUrl = normalizedBase ? `${normalizedBase}/models/nowcast_eval.json` : '/models/nowcast_eval.json';
+      const response = await fetch(modelUrl);
       if (response.ok) {
         const data = await response.json() as ModelEvaluation;
         setMetrics(data);

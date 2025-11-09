@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { WeatherResponse, QuakeFeature } from '../types';
 import InsightCard from './InsightCard';
+import { getApiUrl } from '../utils/api';
 
 interface WeatherCardProps {
   lat: number;
@@ -13,7 +14,7 @@ export default function WeatherCard({ lat, lon, time, quake }: WeatherCardProps)
   const { data: weather, isLoading, error } = useQuery<WeatherResponse>({
     queryKey: ['weather', lat, lon, time],
     queryFn: async () => {
-      const response = await fetch(`/api/weather?lat=${lat}&lon=${lon}&t=${time}`);
+      const response = await fetch(getApiUrl(`/api/weather?lat=${lat}&lon=${lon}&t=${time}`));
       if (!response.ok) {
         if (response.status === 429) {
           throw new Error('Rate limit exceeded. Please wait before making more requests.');

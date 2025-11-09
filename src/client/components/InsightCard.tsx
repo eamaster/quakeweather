@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { QuakeFeature, WeatherResponse, InsightResponse } from '../types';
+import { getApiUrl } from '../utils/api';
 
 interface InsightCardProps {
   quake: QuakeFeature;
@@ -10,7 +11,7 @@ export default function InsightCard({ quake, weather }: InsightCardProps) {
   const { data: insight, isLoading, error } = useQuery<InsightResponse>({
     queryKey: ['insight', quake.id],
     queryFn: async () => {
-      const response = await fetch(`/api/insight`, {
+      const response = await fetch(getApiUrl(`/api/insight`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

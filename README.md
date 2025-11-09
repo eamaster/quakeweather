@@ -635,9 +635,10 @@ npm run train:model
 
 ### 🌐 Production URLs
 
-- **Cloudflare Pages**: https://quakeweather.hesam.me (frontend + API via Pages Functions)
+- **Live App**: https://hesam.me/quakeweather/ (frontend + API via Pages Functions)
+- **Cloudflare Pages**: https://quakeweather.hesam.me (alternative domain, if configured)
 
-**⚠️ Important**: After consolidation to Cloudflare Pages, the app is no longer served at a sub-path. Use the Pages domain (e.g., `quakeweather.hesam.me`) or the default Cloudflare Pages URL. The app runs at the root path (`/`), not `/quakeweather/`.
+**⚠️ Important**: The app is deployed at `/quakeweather/` on `hesam.me`. All asset paths and API routes are configured to work with this base path. The Vite build is configured with `base: '/quakeweather/'` to ensure all assets load correctly.
 
 ### 🔧 Development URLs
 

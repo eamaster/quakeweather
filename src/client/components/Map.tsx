@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { QuakeCollection, QuakeFeature, FeedType, PredictResponse, AftershockResponse } from '../types';
 import PopupCard from './PopupCard';
 import { addNowcastHeatmap, addAftershockRing, removePredictionLayers } from '../utils/predictionLayers';
+import { getApiUrl } from '../utils/api';
 
 // Mapbox token - must be provided via environment variable at build time
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string;
@@ -45,7 +46,7 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
   const { data: quakeData, isLoading, error } = useQuery<QuakeCollection>({
     queryKey: ['quakes', selectedFeed],
     queryFn: async () => {
-      const response = await fetch(`/api/quakes?feed=${selectedFeed}`);
+      const response = await fetch(getApiUrl(`/api/quakes?feed=${selectedFeed}`));
       if (!response.ok) {
         throw new Error('Failed to fetch earthquake data');
       }

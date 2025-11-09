@@ -34,19 +34,25 @@ interface PredictModel {
 // Cache for loaded model
 let cachedModel: PredictModel | null = null;
 
-async function loadModel(requestUrl?: string): Promise<PredictModel> {
+async function loadModel(requestUrl?: string, originalUrl?: string): Promise<PredictModel> {
   if (cachedModel) return cachedModel as PredictModel;
   
   try {
-    // Fetch model from the current origin (root path, not sub-path)
-    // In Cloudflare Pages Functions, public files are served at root path
+    // Fetch model from the current origin with base path
+    // Use original URL if available (from X-Original-Url header) to get correct base path
+    const urlToUse = originalUrl || requestUrl;
     let modelUrl: string;
-    if (requestUrl) {
-      const origin = new URL(requestUrl).origin;
-      modelUrl = `${origin}/models/nowcast.json`;
+    if (urlToUse) {
+      const url = new URL(urlToUse);
+      // Extract base path from request URL (e.g., /quakeweather/api/predict -> /quakeweather)
+      const pathParts = url.pathname.split('/').filter(p => p);
+      const basePath = pathParts.length > 0 && pathParts[0] === 'quakeweather' 
+        ? '/quakeweather' 
+        : '';
+      modelUrl = `${url.origin}${basePath}/models/nowcast.json`;
     } else {
-      // Fallback: use relative path (will resolve relative to current request)
-      modelUrl = '/models/nowcast.json';
+      // Fallback: try to detect base path from current location or use default
+      modelUrl = '/quakeweather/models/nowcast.json';
     }
     
     const response = await fetch(modelUrl);
@@ -159,7 +165,9 @@ predictRoute.get('/', async (c) => {
     const cellDegParam = c.req.query('cellDeg');
     const horizonParam = c.req.query('horizon');
     
-    const model = await loadModel(c.req.url);
+    // Get original URL from header (set by Pages Function handler for base path support)
+    const originalUrl = c.req.header('X-Original-Url') || c.req.url;
+    const model = await loadModel(c.req.url, originalUrl);
     
     const bbox = bboxParam 
       ? bboxParam.split(',').map(Number) as [number, number, number, number]
