@@ -2,7 +2,7 @@
 
 > **Educational web app** that combines **USGS earthquake data** with **OpenWeather conditions** and provides **AI-generated insights**.
 
-![QuakeWeather](https://img.shields.io/badge/status-production-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+![QuakeWeather](https://img.shields.io/badge/status-production-green) ![License](https://img.shields.io/badge/license-MIT-blue) ![Secret Scanning](https://img.shields.io/badge/secret%20scanning-enabled-success) [![Security Policy](https://img.shields.io/badge/security-policy-blue)](SECURITY.md)
 
 ## ⚠️ Important Disclaimer
 
@@ -644,8 +644,12 @@ npm run train:model
 ## Security
 
 This project follows security best practices:
-- All API keys are stored in environment variables, never hardcoded
-- Secret scanning via GitHub Actions (gitleaks)
+- ✅ **Secret Scanning**: Automated scanning via [GitHub Actions](.github/workflows/secret-scan.yml) using [gitleaks](https://github.com/gitleaks/gitleaks)
+- ✅ **Environment Variables Only**: All API keys stored in environment variables, never hardcoded
+- ✅ **Git Protection**: `.env`, `.env.*`, and `.dev.vars` files are gitignored
+- ✅ **Server-Side Proxy**: All external API calls go through backend proxy
+
+**Documentation:**
 - See [SECURITY.md](SECURITY.md) for security policy and key rotation procedures
 - See [SCRIPTS_TO_RUN.md](SCRIPTS_TO_RUN.md) if you need to scrub git history
 
