@@ -7,16 +7,10 @@ title = "gitleaks config"
 # Use default gitleaks rules
 useDefault = true
 
-[[allowlist]]
-description = "Allow documentation files with example secrets"
+[allowlist]
+description = "Allow documentation files with example secrets and patterns"
 paths = [
   '''SCRIPTS_TO_RUN\.md''',
   '''SECURITY\.md''',
-]
-
-[[allowlist]]
-description = "Allow example environment files"
-paths = [
   '''\.env\.example''',
 ]
-
