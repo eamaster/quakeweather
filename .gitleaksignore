@@ -1,0 +1,9 @@
+# Gitleaks ignore file
+# Files that contain example secrets or documentation about secrets
+
+# Documentation file with example secrets for git history scrubbing
+SCRIPTS_TO_RUN.md
+
+# Security documentation (may contain example patterns)
+SECURITY.md
+

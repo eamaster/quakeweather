@@ -22,17 +22,17 @@ brew install git-filter-repo
 
 ### Step 1: Remove Secrets from History
 
-Replace `SECRET_VALUE` with the actual secret value to remove:
+**⚠️ IMPORTANT**: Replace `YOUR_EXPOSED_SECRET_HERE` with the actual secret value that was exposed in your repository.
 
 ```bash
-# Remove OpenWeather API key (replace with actual exposed key)
-git filter-repo --replace-text <(echo "REMOVED_OPENWEATHER_API_KEY==>REMOVED_SECRET")
+# Remove OpenWeather API key (replace YOUR_EXPOSED_OPENWEATHER_KEY with actual exposed key)
+git filter-repo --replace-text <(echo "YOUR_EXPOSED_OPENWEATHER_KEY==>REMOVED_SECRET")
 
-# Remove Mapbox token (replace with actual exposed token)
-git filter-repo --replace-text <(echo "REMOVED_MAPBOX_TOKEN==>REMOVED_SECRET")
+# Remove Mapbox token (replace YOUR_EXPOSED_MAPBOX_TOKEN with actual exposed token)
+git filter-repo --replace-text <(echo "YOUR_EXPOSED_MAPBOX_TOKEN==>REMOVED_SECRET")
 
-# Remove Cohere API key (replace with actual exposed key)
-git filter-repo --replace-text <(echo "REMOVED_COHERE_API_KEY==>REMOVED_SECRET")
+# Remove Cohere API key (replace YOUR_EXPOSED_COHERE_KEY with actual exposed key)
+git filter-repo --replace-text <(echo "YOUR_EXPOSED_COHERE_KEY==>REMOVED_SECRET")
 
 # Remove any other exposed secrets
 git filter-repo --replace-text <(echo "YOUR_SECRET_HERE==>REMOVED_SECRET")
@@ -40,13 +40,17 @@ git filter-repo --replace-text <(echo "YOUR_SECRET_HERE==>REMOVED_SECRET")
 
 ### Step 2: Create Replacement File (Alternative Method)
 
+**⚠️ IMPORTANT**: Replace the placeholder values with your actual exposed secrets.
+
 Create a file `replacements.txt`:
 ```
-REMOVED_OPENWEATHER_API_KEY==>your_openweather_api_key_here
-REMOVED_MAPBOX_TOKEN==>your_mapbox_public_token_here
-REMOVED_COHERE_API_KEY==>your_cohere_api_key_here
-REMOVED_OPENWEATHER_API_KEY==>your_openweather_api_key_here
+YOUR_EXPOSED_OPENWEATHER_KEY==>your_openweather_api_key_here
+YOUR_EXPOSED_MAPBOX_TOKEN==>your_mapbox_public_token_here
+YOUR_EXPOSED_COHERE_KEY==>your_cohere_api_key_here
+YOUR_EXPOSED_OPENWEATHER_KEY_2==>your_openweather_api_key_here
 ```
+
+**Note**: Use the exact secret values that were exposed in your git history. These are just placeholders.
 
 Then run:
 ```bash
@@ -79,13 +83,17 @@ brew install bfg
 
 ### Step 1: Create Passwords File
 
+**⚠️ IMPORTANT**: Replace the placeholder values with your actual exposed secrets.
+
 Create `secrets.txt` with one secret per line:
 ```
-REMOVED_OPENWEATHER_API_KEY
-REMOVED_MAPBOX_TOKEN
-REMOVED_COHERE_API_KEY
-REMOVED_OPENWEATHER_API_KEY
+YOUR_EXPOSED_OPENWEATHER_KEY
+YOUR_EXPOSED_MAPBOX_TOKEN
+YOUR_EXPOSED_COHERE_KEY
+YOUR_EXPOSED_OPENWEATHER_KEY_2
 ```
+
+**Note**: Use the exact secret values that were exposed in your git history. These are just placeholders.
 
 ### Step 2: Clone Fresh Repository
 ```bash
@@ -126,9 +134,9 @@ git filter-repo --path path/to/file --replace-text replacements.txt
 
 ### 1. Verify Secrets Are Removed
 ```bash
-# Search git history for secrets
-git log --all --full-history -p | grep -i "REMOVED_OPENWEATHER_API_KEY"
-git log --all --full-history -p | grep -i "pk.eyJ1IjoiZWFtYXN0ZXIi"
+# Search git history for secrets (replace with your actual exposed secrets)
+git log --all --full-history -p | grep -i "YOUR_EXPOSED_OPENWEATHER_KEY"
+git log --all --full-history -p | grep -i "YOUR_EXPOSED_MAPBOX_TOKEN"
 
 # Should return no results
 ```
