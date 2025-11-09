@@ -374,10 +374,27 @@ npx wrangler pages deploy dist --project-name=quakeweather --branch=main
 ```
 
 ### Environment Variables in Cloudflare Pages
-Set these in Cloudflare Pages dashboard (Settings → Environment Variables):
-- `OPENWEATHER_API_KEY` - Your OpenWeather API key (for Pages Functions)
-- `COHERE_API_KEY` - Your Cohere API key (optional, for AI explanations, for Pages Functions)
-- `VITE_MAPBOX_TOKEN` - Your Mapbox public token (for frontend build)
+Set these in Cloudflare Pages dashboard (Settings → Environment Variables → Production):
+
+1. **VITE_MAPBOX_TOKEN** (Required for frontend)
+   - Your Mapbox public access token
+   - ⚠️ **Must be marked as "Available during build"** for Vite to inject it
+   - Get your token from: https://account.mapbox.com/access-tokens/
+   - This is injected at build time into the client bundle
+
+2. **OPENWEATHER_API_KEY** (Required for backend API)
+   - Your OpenWeather API key
+   - Only needed at runtime in Pages Functions (not during build)
+   - Get your key from: https://openweathermap.org/api
+
+3. **COHERE_API_KEY** (Optional, for AI explanations)
+   - Your Cohere API key
+   - Only needed at runtime in Pages Functions (not during build)
+   - Get your key from: https://cohere.com/
+
+**⚠️ Important**: After setting environment variables, you must **redeploy** the project for them to take effect. Environment variables are only applied to new builds.
+
+**📖 Detailed Setup Instructions**: See [CLOUDFLARE_PAGES_ENV_SETUP.md](CLOUDFLARE_PAGES_ENV_SETUP.md) for step-by-step instructions with screenshots.
 
 **Note**: The API runs via Cloudflare Pages Functions (in the `functions/` folder), not a separate Worker service.
 
