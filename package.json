@@ -8,8 +8,6 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "worker:dev": "wrangler dev",
-    "worker:deploy": "wrangler deploy",
     "pages:dev": "wrangler pages dev dist --compatibility-date=2025-10-03",
     "pages:deploy": "wrangler pages deploy dist",
     "type-check": "tsc --noEmit",

@@ -76,7 +76,7 @@
 - **TanStack Query** - Data fetching and caching
 
 ### Backend
-- **Cloudflare Pages Functions** - Serverless edge functions
+- **Cloudflare Pages Functions** - Serverless edge functions (API runs via `functions/` folder)
 - **Hono** - Lightweight web framework
 - **Zod** - Type-safe validation
 
@@ -132,10 +132,10 @@
 
 5. **Start the API server (in a separate terminal)**
    ```bash
-   pnpm worker:dev
+   pnpm pages:dev
    ```
 
-   The API will be available at `http://localhost:8787`
+   The API will be available at `http://localhost:8787` via Cloudflare Pages Functions
 
 ---
 
@@ -157,7 +157,7 @@ quakeweather/
 │   │   ├── main.tsx              # Entry point with React Query setup
 │   │   ├── types.ts              # TypeScript type definitions
 │   │   └── styles.css            # Global styles and custom scrollbar
-│   └── server/                   # Backend API (Hono + Cloudflare Workers)
+│   └── server/                   # Backend API (Hono + Cloudflare Pages Functions)
 │       ├── routes/               # API route handlers
 │       │   ├── quakes.ts         # USGS earthquake data endpoints
 │       │   ├── weather.ts        # OpenWeather proxy with rate limiting
@@ -171,12 +171,13 @@ quakeweather/
 │       │   ├── utils.ts          # Helper functions
 │       │   └── types.ts          # Shared TypeScript interfaces
 │       └── index.ts              # Hono app initialization
-├── functions/                    # Cloudflare Pages Functions (legacy)
+├── functions/                    # Cloudflare Pages Functions
+│   ├── [[path]].ts               # Catch-all route (Hono server)
+│   └── _middleware.ts            # Security headers middleware
 ├── public/                       # Static assets (favicon, etc.)
 ├── .github/workflows/            # GitHub Actions for deployment
 ├── package.json                  # Dependencies and scripts
-├── vite.config.ts               # Vite configuration with GitHub Pages base
-├── wrangler.toml                # Cloudflare Workers configuration
+├── vite.config.ts               # Vite configuration
 ├── tailwind.config.ts           # Tailwind CSS configuration
 ├── tsconfig.json                # TypeScript configuration
 └── README.md                    # This file
@@ -187,8 +188,7 @@ quakeweather/
 ```bash
 # Development
 npm run dev           # Start Vite dev server (frontend)
-npm run worker:dev    # Start Wrangler dev server (backend API)
-npm run pages:dev     # Start Cloudflare Pages dev server
+npm run pages:dev     # Start Cloudflare Pages dev server (backend API via Pages Functions)
 
 # Build & Type Checking
 npm run build         # Build for production (TypeScript + Vite)
@@ -196,8 +196,7 @@ npm run type-check    # Run TypeScript type checking
 npm run preview       # Preview production build locally
 
 # Deployment
-npm run worker:deploy # Deploy backend to Cloudflare Workers
-npm run pages:deploy  # Deploy frontend to Cloudflare Pages
+npm run pages:deploy  # Deploy to Cloudflare Pages (frontend + API via Pages Functions)
 
 # Quick Deploy (Windows)
 deploy.bat           # One-click deployment script
@@ -205,8 +204,9 @@ deploy.bat           # One-click deployment script
 
 **Development Workflow:**
 1. **Frontend**: `npm run dev` (runs on http://localhost:5173)
-2. **Backend**: `npm run worker:dev` (runs on http://localhost:8787)
+2. **Backend API**: `npm run pages:dev` (runs on http://localhost:8787 via Cloudflare Pages Functions)
 3. **Full Stack**: Both servers run simultaneously for development
+4. **API Routes**: All API calls use same-origin `/api/*` paths (no separate Worker service)
 
 ---
 
@@ -316,6 +316,8 @@ Generate AI-assisted analysis for an earthquake.
 
 ## Architecture
 
+**Deployment Model**: QuakeWeather uses Cloudflare Pages with Pages Functions for both frontend and API. The API runs via `functions/[[path]].ts` which routes all requests to the Hono app in `src/server/index.ts`. No separate Worker service is needed.
+
 ### Caching Strategy
 
 1. **USGS Earthquake Data**
@@ -371,25 +373,25 @@ npm run build
 npx wrangler pages deploy dist --project-name=quakeweather --branch=main
 ```
 
-### Environment Variables in Cloudflare
-Set these in Cloudflare Pages/Workers dashboard:
-- `OPENWEATHER_API_KEY` - Your OpenWeather API key
-- `MAPBOX_TOKEN` - Your Mapbox public token (for backend if needed)
-- `COHERE_API_KEY` - Your Cohere API key (optional, for AI explanations)
+### Environment Variables in Cloudflare Pages
+Set these in Cloudflare Pages dashboard (Settings → Environment Variables):
+- `OPENWEATHER_API_KEY` - Your OpenWeather API key (for Pages Functions)
+- `COHERE_API_KEY` - Your Cohere API key (optional, for AI explanations, for Pages Functions)
+- `VITE_MAPBOX_TOKEN` - Your Mapbox public token (for frontend build)
 
-For frontend, set `VITE_MAPBOX_TOKEN` in your build environment.
+**Note**: The API runs via Cloudflare Pages Functions (in the `functions/` folder), not a separate Worker service.
 
 ## Troubleshooting
 
 ### Map doesn't load
-- Verify `VITE_MAPBOX_TOKEN` is set in build environment
+- Verify `VITE_MAPBOX_TOKEN` is set in build environment or `.dev.vars`
 - Check browser console for errors
-- Ensure backend server is running (for local development)
+- Ensure Pages dev server is running for local development: `npm run pages:dev`
 
 ### Weather API errors
-- Verify `OPENWEATHER_API_KEY` is set in Cloudflare environment variables
+- Verify `OPENWEATHER_API_KEY` is set in Cloudflare Pages environment variables
 - Check rate limits (30 requests per 10 minutes)
-- Restart backend server after adding environment variables
+- Restart Pages dev server after adding environment variables: `npm run pages:dev`
 
 ### Build fails
 - Run `npm install` to ensure all dependencies are installed
@@ -630,14 +632,12 @@ npm run train:model
 
 ### 🌐 Production URLs
 
-- **Cloudflare Pages**: https://quakeweather.hesam.me
-- **GitHub Pages**: https://hesam.me/quakeweather
-- **Backend API**: https://quakeweather-api.smah0085.workers.dev
+- **Cloudflare Pages**: https://quakeweather.hesam.me (frontend + API via Pages Functions)
 
 ### 🔧 Development URLs
 
 - **Local Frontend**: http://localhost:5173
-- **Local Backend**: http://localhost:8787
+- **Local Backend API**: http://localhost:8787 (via `npm run pages:dev`)
 
 ---
 

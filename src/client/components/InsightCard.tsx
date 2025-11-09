@@ -10,11 +10,7 @@ export default function InsightCard({ quake, weather }: InsightCardProps) {
   const { data: insight, isLoading, error } = useQuery<InsightResponse>({
     queryKey: ['insight', quake.id],
     queryFn: async () => {
-      // Use deployed backend URL for GitHub Pages, fallback to local for development
-      const apiBase = window.location.hostname === 'hesam.me' 
-        ? 'https://quakeweather-api.smah0085.workers.dev'
-        : '';
-      const response = await fetch(`${apiBase}/api/insight`, {
+      const response = await fetch(`/api/insight`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

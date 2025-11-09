@@ -9,7 +9,7 @@ QuakeWeather follows security best practices to protect API keys and credentials
 1. **Environment Variables Only**
    - All API keys are stored in environment variables, never hardcoded in source code
    - Frontend tokens use `VITE_` prefix and are injected at build time
-   - Backend secrets are read from Cloudflare Workers/Pages environment variables
+   - Backend secrets are read from Cloudflare Pages environment variables (Pages Functions)
 
 2. **Git Ignore Protection**
    - `.env`, `.env.*`, and `.dev.vars` are excluded from version control
@@ -21,9 +21,9 @@ QuakeWeather follows security best practices to protect API keys and credentials
    - Scans on every pull request and push to main/master
 
 4. **Server-Side Proxy**
-   - All external API calls go through backend proxy
+   - All external API calls go through backend proxy (Pages Functions)
    - API keys never exposed to client-side code
-   - Cloudflare Workers/Pages handles all sensitive operations
+   - Cloudflare Pages Functions handles all sensitive operations
 
 ### 🔑 Required API Keys
 
@@ -33,15 +33,15 @@ QuakeWeather follows security best practices to protect API keys and credentials
   - Set in `.env` file or build environment
   - Injected at build time via Vite
 
-#### Backend (Runtime)
+#### Backend (Runtime - Pages Functions)
 - **OPENWEATHER_API_KEY**: OpenWeather API key (required)
   - Get from: https://openweathermap.org/api
-  - Set in Cloudflare Pages/Workers environment variables
+  - Set in Cloudflare Pages environment variables (Settings → Environment Variables)
   - Or in `.dev.vars` for local development
 
 - **COHERE_API_KEY**: Cohere API key (optional, for AI explanations)
   - Get from: https://cohere.com/
-  - Set in Cloudflare Workers secrets
+  - Set in Cloudflare Pages environment variables (Settings → Environment Variables)
   - Or in `.dev.vars` for local development
 
 ### 🚨 If You Discover a Secret in the Repository
@@ -69,7 +69,7 @@ QuakeWeather follows security best practices to protect API keys and credentials
 2. Go to API keys section
 3. Generate a new API key
 4. Revoke the old key
-5. Update in Cloudflare Pages/Workers environment variables
+5. Update in Cloudflare Pages environment variables (Settings → Environment Variables)
 6. Update local `.dev.vars` file
 7. Redeploy application
 
@@ -86,9 +86,9 @@ QuakeWeather follows security best practices to protect API keys and credentials
 2. Go to API keys section
 3. Generate a new API key
 4. Revoke the old key
-5. Update in Cloudflare Workers secrets: `npx wrangler secret put COHERE_API_KEY`
+5. Update in Cloudflare Pages environment variables (Settings → Environment Variables)
 6. Update local `.dev.vars` file
-7. Redeploy backend
+7. Redeploy application
 
 ### 🧪 Running Secret Scans Locally
 
@@ -133,7 +133,7 @@ The secret scanner checks for:
 
 - [GitHub Secret Scanning](https://docs.github.com/en/code-security/secret-scanning)
 - [OWASP Secret Management](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
-- [Cloudflare Workers Secrets](https://developers.cloudflare.com/workers/wrangler/commands/#secret)
+- [Cloudflare Pages Environment Variables](https://developers.cloudflare.com/pages/platform/build-configuration/#environment-variables)
 - [Vite Environment Variables](https://vitejs.dev/guide/env-and-mode.html)
 
 ### ⚠️ Important Notes

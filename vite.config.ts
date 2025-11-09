@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/quakeweather/', // GitHub Pages base path
+  base: '/', // Cloudflare Pages (no base path needed)
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src/client'),
