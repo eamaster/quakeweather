@@ -1,0 +1,22 @@
+# Gitleaks configuration file
+# This file tells gitleaks which files/paths to ignore during scanning
+
+title = "gitleaks config"
+
+[extend]
+# Use default gitleaks rules
+useDefault = true
+
+[[allowlist]]
+description = "Allow documentation files with example secrets"
+paths = [
+  '''SCRIPTS_TO_RUN\.md''',
+  '''SECURITY\.md''',
+]
+
+[[allowlist]]
+description = "Allow example environment files"
+paths = [
+  '''\.env\.example''',
+]
+
