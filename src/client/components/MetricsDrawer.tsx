@@ -49,7 +49,8 @@ export default function MetricsDrawer({ isOpen, onClose }: MetricsDrawerProps) {
     
     try {
       // Try to load from deployed model first, fallback to placeholder
-      const response = await fetch('/quakeweather/models/nowcast_eval.json');
+      // Model is served from public/models/ at root path (not sub-path)
+      const response = await fetch('/models/nowcast_eval.json');
       if (response.ok) {
         const data = await response.json() as ModelEvaluation;
         setMetrics(data);

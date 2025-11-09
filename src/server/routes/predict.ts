@@ -34,19 +34,30 @@ interface PredictModel {
 // Cache for loaded model
 let cachedModel: PredictModel | null = null;
 
-async function loadModel(): Promise<PredictModel> {
+async function loadModel(requestUrl?: string): Promise<PredictModel> {
   if (cachedModel) return cachedModel as PredictModel;
   
   try {
-    // In production, this would be fetched from public/models/nowcast.json
-    // For now, we'll use a placeholder model
-    const response = await fetch('https://quakeweather.hesam.me/quakeweather/models/nowcast.json');
+    // Fetch model from the current origin (root path, not sub-path)
+    // In Cloudflare Pages Functions, public files are served at root path
+    let modelUrl: string;
+    if (requestUrl) {
+      const origin = new URL(requestUrl).origin;
+      modelUrl = `${origin}/models/nowcast.json`;
+    } else {
+      // Fallback: use relative path (will resolve relative to current request)
+      modelUrl = '/models/nowcast.json';
+    }
+    
+    const response = await fetch(modelUrl);
     if (response.ok) {
       cachedModel = await response.json() as PredictModel;
       return cachedModel as PredictModel;
+    } else {
+      console.log(`Failed to load model: ${response.status} ${response.statusText}`);
     }
   } catch (error) {
-    console.log('Could not load trained model, using placeholder');
+    console.log('Could not load trained model, using placeholder:', error);
   }
   
   // Placeholder model (will be replaced after training)
@@ -148,7 +159,7 @@ predictRoute.get('/', async (c) => {
     const cellDegParam = c.req.query('cellDeg');
     const horizonParam = c.req.query('horizon');
     
-    const model = await loadModel();
+    const model = await loadModel(c.req.url);
     
     const bbox = bboxParam 
       ? bboxParam.split(',').map(Number) as [number, number, number, number]

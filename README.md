@@ -637,6 +637,8 @@ npm run train:model
 
 - **Cloudflare Pages**: https://quakeweather.hesam.me (frontend + API via Pages Functions)
 
+**⚠️ Important**: After consolidation to Cloudflare Pages, the app is no longer served at a sub-path. Use the Pages domain (e.g., `quakeweather.hesam.me`) or the default Cloudflare Pages URL. The app runs at the root path (`/`), not `/quakeweather/`.
+
 ### 🔧 Development URLs
 
 - **Local Frontend**: http://localhost:5173
