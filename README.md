@@ -394,11 +394,9 @@ Set these in Cloudflare Pages dashboard (Settings → Environment Variables → 
 
 **⚠️ Important**: After setting environment variables, you must **redeploy** the project for them to take effect. Environment variables are only applied to new builds.
 
-**📖 Setup Guides**:
-- **[SET_ENV_VARS.md](SET_ENV_VARS.md)** - Quick setup guide with scripts and CLI commands
-- **[CLOUDFLARE_PAGES_ENV_SETUP.md](CLOUDFLARE_PAGES_ENV_SETUP.md)** - Detailed dashboard setup instructions
+**📖 Detailed Setup Instructions**: See [CLOUDFLARE_PAGES_ENV_SETUP.md](CLOUDFLARE_PAGES_ENV_SETUP.md) for step-by-step instructions with screenshots.
 
-**🚀 Quick Setup**: Run `npm run setup:env:windows` (Windows) or `npm run setup:env:unix` (Linux/Mac) for interactive setup.
+**🔄 How to Redeploy**: See [HOW_TO_REDEPLOY.md](HOW_TO_REDEPLOY.md) for detailed redeployment instructions (dashboard, command line, or Git push methods).
 
 **Note**: The API runs via Cloudflare Pages Functions (in the `functions/` folder), not a separate Worker service.
 
