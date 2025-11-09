@@ -5,8 +5,12 @@ import { QuakeCollection, QuakeFeature, FeedType, PredictResponse, AftershockRes
 import PopupCard from './PopupCard';
 import { addNowcastHeatmap, addAftershockRing, removePredictionLayers } from '../utils/predictionLayers';
 
-// Mapbox token - will be injected at build time
-const MAPBOX_TOKEN = 'REMOVED_MAPBOX_TOKEN';
+// Mapbox token - must be provided via environment variable at build time
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string;
+
+if (!MAPBOX_TOKEN) {
+  throw new Error('VITE_MAPBOX_TOKEN environment variable is required. Please set it in your .env file or build environment.');
+}
 
 mapboxgl.accessToken = MAPBOX_TOKEN;
 

@@ -14,7 +14,8 @@
     "pages:deploy": "wrangler pages deploy dist",
     "type-check": "tsc --noEmit",
     "train:model": "tsx tools/backtest/nowcast.ts",
-    "test:etas": "tsx tools/backtest/test-etas.ts"
+    "test:etas": "tsx tools/backtest/test-etas.ts",
+    "secret-scan": "npx gitleaks detect --no-banner --verbose || (echo '⚠️  Secrets detected! Please review and remove any hardcoded credentials.' && exit 1)"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.51.1",

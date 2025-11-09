@@ -110,15 +110,18 @@
 
 3. **Set up environment variables**
    
-   Create a `.dev.vars` file in the root directory (this file is gitignored):
-   ```env
-   OPENWEATHER_API_KEY=your_openweather_api_key_here
-   MAPBOX_TOKEN=your_mapbox_token_here
+   Copy `.env.example` to `.dev.vars` and fill in your actual API keys:
+   ```bash
+   cp .env.example .dev.vars
+   # Then edit .dev.vars with your actual keys
    ```
-
-   **Getting API Keys:**
-   - **OpenWeather**: Sign up at [OpenWeather](https://openweathermap.org/api) (free tier available)
-   - **Mapbox**: Create a token at [Mapbox Account](https://account.mapbox.com/)
+   
+   **Required variables:**
+   - `OPENWEATHER_API_KEY` - Get from [OpenWeather](https://openweathermap.org/api) (free tier available)
+   - `VITE_MAPBOX_TOKEN` - Get from [Mapbox Account](https://account.mapbox.com/access-tokens/)
+   - `COHERE_API_KEY` - Optional, get from [Cohere](https://cohere.com/) (for AI explanations)
+   
+   **Note:** `.dev.vars` is gitignored and should never be committed. The `.env.example` file contains placeholders only.
 
 4. **Start the development server**
    ```bash
@@ -278,64 +281,6 @@ Generate AI-assisted analysis for an earthquake.
 
 ---
 
-## Deployment
-
-### 🚀 Multiple Deployment Options
-
-QuakeWeather supports both **Cloudflare Pages** and **GitHub Pages** deployment:
-
-#### Option 1: Cloudflare Pages (Recommended) ⭐
-
-**Quick Deploy (Windows):**
-```bash
-# Just double-click this file:
-deploy.bat
-```
-
-**Manual Deploy:**
-```bash
-npm run build
-npx wrangler pages deploy dist --project-name=quakeweather --branch=main
-```
-
-**Set Environment Variables:**
-- Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Pages → Your Project → Settings → Environment Variables
-- Add:
-  - `OPENWEATHER_API_KEY` - Your OpenWeather API key
-  - `MAPBOX_TOKEN` - Your Mapbox access token
-
-**Automatic Deployments:**
-- Connect GitHub repository to Cloudflare Pages
-- Every `git push` to `main` triggers automatic deployment
-- Preview deployments for pull requests
-
-#### Option 2: GitHub Pages
-
-**Automatic Deployment:**
-The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) for automatic deployment on push to `main`.
-
-**Setup:**
-1. Enable GitHub Pages in repository settings
-2. Set source to "GitHub Actions"
-3. The workflow will automatically deploy to `https://yourusername.github.io/quakeweather`
-
-**Backend Requirements:**
-- GitHub Pages only serves static files
-- Backend APIs must be deployed separately to Cloudflare Workers
-- Frontend automatically detects and uses deployed backend URL
-
-#### Option 3: Cloudflare Workers (Backend Only)
-
-For the API backend:
-```bash
-npx wrangler deploy
-```
-
-**Set Secrets:**
-```bash
-npx wrangler secret put OPENWEATHER_API_KEY
-npx wrangler secret put MAPBOX_TOKEN
-```
 
 ---
 
@@ -413,6 +358,49 @@ npx wrangler secret put MAPBOX_TOKEN
 
 ---
 
+## Deployment
+
+### Quick Deploy (Windows)
+```bash
+deploy.bat
+```
+
+### Manual Deploy
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=quakeweather --branch=main
+```
+
+### Environment Variables in Cloudflare
+Set these in Cloudflare Pages/Workers dashboard:
+- `OPENWEATHER_API_KEY` - Your OpenWeather API key
+- `MAPBOX_TOKEN` - Your Mapbox public token (for backend if needed)
+- `COHERE_API_KEY` - Your Cohere API key (optional, for AI explanations)
+
+For frontend, set `VITE_MAPBOX_TOKEN` in your build environment.
+
+## Troubleshooting
+
+### Map doesn't load
+- Verify `VITE_MAPBOX_TOKEN` is set in build environment
+- Check browser console for errors
+- Ensure backend server is running (for local development)
+
+### Weather API errors
+- Verify `OPENWEATHER_API_KEY` is set in Cloudflare environment variables
+- Check rate limits (30 requests per 10 minutes)
+- Restart backend server after adding environment variables
+
+### Build fails
+- Run `npm install` to ensure all dependencies are installed
+- Check that `VITE_MAPBOX_TOKEN` is set for frontend builds
+- Verify TypeScript compilation: `npm run type-check`
+
+### Rate limit exceeded
+- Wait 10 minutes (limit: 30 requests per 10 minutes per IP)
+- Cache is enabled to reduce API calls
+- Consider increasing rate limit in production if needed
+
 ## Contributing
 
 Contributions are welcome! Please follow these guidelines:
@@ -422,6 +410,8 @@ Contributions are welcome! Please follow these guidelines:
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
@@ -651,25 +641,19 @@ npm run train:model
 
 ---
 
+## Security
+
+This project follows security best practices:
+- All API keys are stored in environment variables, never hardcoded
+- Secret scanning via GitHub Actions (gitleaks)
+- See [SECURITY.md](SECURITY.md) for security policy and key rotation procedures
+- See [SCRIPTS_TO_RUN.md](SCRIPTS_TO_RUN.md) if you need to scrub git history
+
 ## Support
-
-### 📚 Documentation
-
-- **Quick Start**: See `START_HERE.md` for immediate setup
-- **Deployment Guide**: See `HOW_TO_DEPLOY.md` for deployment options
-- **Troubleshooting**: See `TROUBLESHOOTING.md` for common issues
-- **Project Overview**: See `PROJECT_OVERVIEW.md` for technical details
 
 ### 🐛 Issues & Questions
 
 For issues, questions, or suggestions, please [open an issue](https://github.com/eamaster/quakeweather/issues) on GitHub.
-
-### 🔑 API Keys
-
-**Current Working API Key**: `REMOVED_OPENWEATHER_API_KEY`
-- ✅ Works with OpenWeather One Call API 3.0
-- ✅ Works with OpenWeather Current Weather API
-- ✅ Includes historical weather data access
 
 ---
 
