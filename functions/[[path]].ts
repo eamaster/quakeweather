@@ -2,13 +2,10 @@ import { handle } from 'hono/cloudflare-pages';
 import app from '../src/server/index';
 
 export const onRequest: typeof handle = async (context) => {
-  // Strip base path if app is deployed at a sub-path (e.g., /quakeweather)
-  // This allows API routes to work regardless of deployment path
   const url = new URL(context.request.url);
   const pathname = url.pathname;
   
-  // Check if path starts with /quakeweather/api and strip it for API routes
-  // This allows the app to work at both root and sub-path deployments
+  // Handle API routes with base path
   if (pathname.startsWith('/quakeweather/api')) {
     // Store original URL in a header so routes can access it for model loading
     const originalUrl = context.request.url;
@@ -34,7 +31,44 @@ export const onRequest: typeof handle = async (context) => {
     return handle(app)(newContext);
   }
   
-  // For non-API routes or root deployment, use standard handling
+  // Handle /quakeweather/ root - serve index.html with correct base path
+  if (pathname === '/quakeweather' || pathname === '/quakeweather/') {
+    try {
+      // Try to fetch index.html from assets
+      const indexUrl = new URL('/index.html', url.origin);
+      const indexResponse = await (context.env as any).ASSETS?.fetch(indexUrl);
+      
+      if (indexResponse?.ok) {
+        const html = await indexResponse.text();
+        return new Response(html, {
+          headers: {
+            'Content-Type': 'text/html',
+            'Cache-Control': 'no-cache',
+          },
+        });
+      }
+    } catch (e) {
+      // Fall through to default handling
+    }
+  }
+  
+  // Handle static assets under /quakeweather/
+  if (pathname.startsWith('/quakeweather/assets/') || pathname.startsWith('/quakeweather/models/')) {
+    // Remove /quakeweather prefix to get actual asset path
+    const assetPath = pathname.replace('/quakeweather', '');
+    const assetUrl = new URL(assetPath, url.origin);
+    
+    try {
+      const assetResponse = await (context.env as any).ASSETS?.fetch(assetUrl);
+      if (assetResponse?.ok) {
+        return assetResponse;
+      }
+    } catch (e) {
+      // Fall through to default handling
+    }
+  }
+  
+  // For other routes, use standard Hono handling
   return handle(app)(context);
 };
 
