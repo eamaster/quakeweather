@@ -381,6 +381,9 @@ Set these in Cloudflare Pages dashboard (Settings → Environment Variables):
 
 **Note**: The API runs via Cloudflare Pages Functions (in the `functions/` folder), not a separate Worker service.
 
+### ⚠️ Important: Cleanup Old Worker Service
+If you have an old `quakeweather-api` Worker service in your Cloudflare dashboard, **delete it** - it's no longer needed. See [CLOUDFLARE_CLEANUP.md](CLOUDFLARE_CLEANUP.md) for step-by-step instructions.
+
 ## Troubleshooting
 
 ### Map doesn't load
