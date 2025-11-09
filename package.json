@@ -13,7 +13,10 @@
     "type-check": "tsc --noEmit",
     "train:model": "tsx tools/backtest/nowcast.ts",
     "test:etas": "tsx tools/backtest/test-etas.ts",
-    "secret-scan": "npx gitleaks detect --no-banner --verbose || (echo '⚠️  Secrets detected! Please review and remove any hardcoded credentials.' && exit 1)"
+    "secret-scan": "npx gitleaks detect --no-banner --verbose || (echo '⚠️  Secrets detected! Please review and remove any hardcoded credentials.' && exit 1)",
+    "setup:env": "node scripts/setup-env.js",
+    "setup:env:windows": "scripts\\set-env-vars.bat",
+    "setup:env:unix": "bash scripts/set-env-vars.sh"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.51.1",
