@@ -182,11 +182,31 @@ After redeploying, verify that:
 3. Wait for build to complete
 4. Test the app
 
-### Command Line Method
-```bash
+### Command Line Method (PowerShell)
+
+**Windows PowerShell:**
+```powershell
+# Navigate to project directory
+cd C:\Users\EAMASTER\quakeweather
+
+# Build the project
 npm run build
+
+# Deploy to Cloudflare Pages
 npm run pages:deploy
 ```
+
+**Quick one-liner:**
+```powershell
+npm run build; npm run pages:deploy
+```
+
+**Or use the batch script:**
+```powershell
+.\deploy.bat
+```
+
+**📖 Detailed PowerShell Instructions**: See [REDEPLOY_POWERSHELL.md](REDEPLOY_POWERSHELL.md) for complete PowerShell deployment guide.
 
 ### Git Push Method
 ```bash
