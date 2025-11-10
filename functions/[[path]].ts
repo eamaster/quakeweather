@@ -5,16 +5,18 @@ export const onRequest: typeof handle = async (context) => {
   const url = new URL(context.request.url);
   const pathname = url.pathname;
   
-  // Handle API routes with base path
-  if (pathname.startsWith('/quakeweather/api')) {
-    // Store original URL in a header so routes can access it for model loading
-    const originalUrl = context.request.url;
-    const newPathname = pathname.replace('/quakeweather', '');
-    const newUrl = new URL(newPathname + url.search, url.origin);
+  // Only handle API routes through Hono
+  // API routes: /api/* or /quakeweather/api/*
+  if (pathname.startsWith('/api') || pathname.startsWith('/quakeweather/api')) {
+    // Strip /quakeweather prefix if present
+    const apiPath = pathname.startsWith('/quakeweather') 
+      ? pathname.replace('/quakeweather', '')
+      : pathname;
     
-    // Create new headers with original URL
+    // Store original URL in a header so routes can access it for model loading
+    const newUrl = new URL(apiPath + url.search, url.origin);
     const newHeaders = new Headers(context.request.headers);
-    newHeaders.set('X-Original-Url', originalUrl);
+    newHeaders.set('X-Original-Url', context.request.url);
     
     const newRequest = new Request(newUrl, {
       method: context.request.method,
@@ -22,7 +24,6 @@ export const onRequest: typeof handle = async (context) => {
       body: context.request.body,
     });
     
-    // Create a new context with the modified request
     const newContext = {
       ...context,
       request: newRequest,
@@ -31,44 +32,8 @@ export const onRequest: typeof handle = async (context) => {
     return handle(app)(newContext);
   }
   
-  // Handle /quakeweather/ root - serve index.html with correct base path
-  if (pathname === '/quakeweather' || pathname === '/quakeweather/') {
-    try {
-      // Try to fetch index.html from assets
-      const indexUrl = new URL('/index.html', url.origin);
-      const indexResponse = await (context.env as any).ASSETS?.fetch(indexUrl);
-      
-      if (indexResponse?.ok) {
-        const html = await indexResponse.text();
-        return new Response(html, {
-          headers: {
-            'Content-Type': 'text/html',
-            'Cache-Control': 'no-cache',
-          },
-        });
-      }
-    } catch (e) {
-      // Fall through to default handling
-    }
-  }
-  
-  // Handle static assets under /quakeweather/
-  if (pathname.startsWith('/quakeweather/assets/') || pathname.startsWith('/quakeweather/models/')) {
-    // Remove /quakeweather prefix to get actual asset path
-    const assetPath = pathname.replace('/quakeweather', '');
-    const assetUrl = new URL(assetPath, url.origin);
-    
-    try {
-      const assetResponse = await (context.env as any).ASSETS?.fetch(assetUrl);
-      if (assetResponse?.ok) {
-        return assetResponse;
-      }
-    } catch (e) {
-      // Fall through to default handling
-    }
-  }
-  
-  // For other routes, use standard Hono handling
-  return handle(app)(context);
+  // For all other routes (/, /quakeweather/, /assets/*, etc.)
+  // Let Cloudflare Pages serve static files
+  return context.next();
 };
 
