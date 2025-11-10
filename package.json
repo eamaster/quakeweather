@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:check": "tsc && vite build",
+    "build:check": "node scripts/assert-env.mjs && tsc && vite build",
     "preview": "vite preview",
     "pages:dev": "wrangler pages dev dist --compatibility-date=2025-10-03",
     "pages:deploy": "wrangler pages deploy dist --project-name=quakeweather --branch=main",
@@ -15,7 +15,10 @@
     "type-check": "tsc --noEmit",
     "train:model": "tsx tools/backtest/nowcast.ts",
     "test:etas": "tsx tools/backtest/test-etas.ts",
-    "secret-scan": "npx gitleaks detect --no-banner --verbose || (echo '⚠️  Secrets detected! Please review and remove any hardcoded credentials.' && exit 1)"
+    "secret-scan": "npx gitleaks detect --no-banner --verbose || (echo '⚠️  Secrets detected! Please review and remove any hardcoded credentials.' && exit 1)",
+    "test:env:missing": "node scripts/test-build-no-token.mjs",
+    "test:env:dist": "node scripts/assert-env.mjs && npm run build && node scripts/test-dist-no-placeholder.mjs",
+    "qa:env": "npm run test:env:missing && npm run test:env:dist"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.51.1",

@@ -382,6 +382,9 @@ Generate AI-assisted analysis for an earthquake.
 
 ## Deployment
 
+### Deployment Gotcha
+- `VITE_MAPBOX_TOKEN` must be present during every build (Production, Preview, Branch, local) or the build will fail; update it in Cloudflare Pages, mark it “Available during build”, then redeploy after any change.
+
 ### Quick Deploy (Windows)
 ```powershell
 # Make sure you have .env file with VITE_MAPBOX_TOKEN

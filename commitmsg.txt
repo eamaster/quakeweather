@@ -1,0 +1,9 @@
+chore(security): enforce build-time VITE_MAPBOX_TOKEN + add QA tests
+
+- Add assert-env prebuild gate so builds fail fast if VITE_MAPBOX_TOKEN is missing
+- Add CI-style tests: missing-token failure + dist placeholder check
+- Wire gate into build:check; no behavior change beyond safety
+- Logs: see logs/qa-env-missing.log and logs/qa-env-dist.log
+
+Ref: Map.tsx requires VITE_MAPBOX_TOKEN at build/runtime (import.meta.env) :contentReference[oaicite:3]{index=3}
+Deploy uses wrangler pages deploy (pages:deploy) :contentReference[oaicite:4]{index=4}
