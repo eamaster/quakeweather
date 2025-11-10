@@ -23,12 +23,18 @@ This compiles TypeScript and builds the Vite project into the `dist` folder.
 
 ### 3. Deploy to Cloudflare Pages
 ```powershell
-npm run pages:deploy
+# Deploy to PRODUCTION (custom domain: https://hesam.me/quakeweather/)
+npm run pages:deploy:prod
+
+# OR deploy to PREVIEW (https://main.quakeweather.pages.dev/)
+npm run pages:deploy:preview
 ```
 
-OR use the full Wrangler command:
+**⚠️ IMPORTANT**: Use `pages:deploy:prod` for Production, `pages:deploy:preview` for Preview.
+
+After deploying, verify it went to Production:
 ```powershell
-npx wrangler pages deploy dist --project-name=quakeweather --branch=main
+npm run verify:prod
 ```
 
 ## Complete PowerShell Script

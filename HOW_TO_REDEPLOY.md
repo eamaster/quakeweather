@@ -54,12 +54,18 @@ If you prefer to deploy from your local machine, use these commands.
 
 3. **Deploy to Cloudflare Pages**
    ```bash
-   npm run pages:deploy
+   # Deploy to PRODUCTION (custom domain: https://hesam.me/quakeweather/)
+   npm run pages:deploy:prod
+   
+   # OR deploy to PREVIEW (https://main.quakeweather.pages.dev/)
+   npm run pages:deploy:preview
    ```
    
-   OR use the full command:
+   **⚠️ IMPORTANT**: Use `pages:deploy:prod` for Production, `pages:deploy:preview` for Preview.
+   
+   After deploying, verify it went to Production:
    ```bash
-   npx wrangler pages deploy dist --project-name=quakeweather --branch=main
+   npm run verify:prod
    ```
 
 4. **Wait for Deployment**

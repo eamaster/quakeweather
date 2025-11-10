@@ -216,7 +216,11 @@ npm run type-check    # Run TypeScript type checking
 npm run preview       # Preview production build locally
 
 # Deployment
-npm run pages:deploy  # Deploy to Cloudflare Pages (frontend + API via Pages Functions)
+npm run pages:deploy:prod    # Deploy to PRODUCTION (custom domain: https://hesam.me/quakeweather/)
+npm run pages:deploy:preview # Deploy to PREVIEW (https://main.quakeweather.pages.dev/)
+npm run deploy              # Build and deploy to PRODUCTION (alias for build:check + pages:deploy:prod)
+npm run deploy:preview     # Build and deploy to PREVIEW
+npm run verify:prod         # Verify last deployment is PRODUCTION (not Preview)
 ```
 
 **Development Workflow:**
@@ -401,9 +405,20 @@ Copy-Item .env.example .env
 # Build (Vite automatically loads .env file)
 npm run build
 
-# Deploy
-npm run pages:deploy
+# Deploy to PRODUCTION (custom domain: https://hesam.me/quakeweather/)
+npm run pages:deploy:prod
+
+# OR deploy to PREVIEW (https://main.quakeweather.pages.dev/)
+npm run pages:deploy:preview
+
+# Verify deployment is PRODUCTION (not Preview)
+npm run verify:prod
 ```
+
+**⚠️ IMPORTANT**: 
+- Use `pages:deploy:prod` for Production deployments (serves custom domain)
+- Use `pages:deploy:preview` for Preview deployments (testing)
+- Always verify with `verify:prod` after deploying to ensure it went to Production
 
 **📖 If you get "VITE_MAPBOX_TOKEN environment variable is required" error**, see [FIX_MAPBOX_TOKEN.md](FIX_MAPBOX_TOKEN.md) for the complete solution.
 
