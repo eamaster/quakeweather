@@ -420,7 +420,7 @@ npm run verify:prod
 - Use `pages:deploy:preview` for Preview deployments (testing)
 - Always verify with `verify:prod` after deploying to ensure it went to Production
 
-**📖 If you get "VITE_MAPBOX_TOKEN environment variable is required" error**, see [FIX_MAPBOX_TOKEN.md](FIX_MAPBOX_TOKEN.md) for the complete solution.
+**📖 If you get "VITE_MAPBOX_TOKEN environment variable is required" error**, ensure you have created a local `.env` file with `VITE_MAPBOX_TOKEN` set (see "Set up environment variables" section above).
 
 ### Environment Variables in Cloudflare Pages
 Set these in Cloudflare Pages dashboard (Settings → Environment Variables → Production):
@@ -443,14 +443,15 @@ Set these in Cloudflare Pages dashboard (Settings → Environment Variables → 
 
 **⚠️ Important**: After setting environment variables, you must **redeploy** the project for them to take effect. Environment variables are only applied to new builds.
 
-**📖 Detailed Setup Instructions**: See [CLOUDFLARE_PAGES_ENV_SETUP.md](CLOUDFLARE_PAGES_ENV_SETUP.md) for step-by-step instructions with screenshots.
-
-**🔄 How to Redeploy**: See [HOW_TO_REDEPLOY.md](HOW_TO_REDEPLOY.md) for detailed redeployment instructions (dashboard, command line, or Git push methods).
+**🔄 How to Redeploy**: 
+- **Via Dashboard**: Go to Deployments tab → Click "Retry deployment" on latest deployment
+- **Via Command Line**: Run `npm run build && npm run pages:deploy:prod`
+- **Via Git**: Push a commit to trigger automatic deployment
 
 **Note**: The API runs via Cloudflare Pages Functions (in the `functions/` folder), not a separate Worker service.
 
 ### ⚠️ Important: Cleanup Old Worker Service
-If you have an old `quakeweather-api` Worker service in your Cloudflare dashboard, **delete it** - it's no longer needed. See [CLOUDFLARE_CLEANUP.md](CLOUDFLARE_CLEANUP.md) for step-by-step instructions.
+If you have an old `quakeweather-api` Worker service in your Cloudflare dashboard, **delete it** - it's no longer needed. The API now runs via Cloudflare Pages Functions (in the `functions/` folder), not a separate Worker service.
 
 ## Troubleshooting
 
