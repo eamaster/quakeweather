@@ -7,9 +7,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:check": "tsc && vite build",
     "preview": "vite preview",
     "pages:dev": "wrangler pages dev dist --compatibility-date=2025-10-03",
-    "pages:deploy": "wrangler pages deploy dist",
+    "pages:deploy": "wrangler pages deploy dist --project-name=quakeweather --branch=main",
+    "deploy": "npm run build:check && npm run pages:deploy",
     "type-check": "tsc --noEmit",
     "train:model": "tsx tools/backtest/nowcast.ts",
     "test:etas": "tsx tools/backtest/test-etas.ts",

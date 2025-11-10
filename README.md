@@ -110,18 +110,38 @@
 
 3. **Set up environment variables**
    
-   Copy `.env.example` to `.dev.vars` and fill in your actual API keys:
-   ```bash
-   cp .env.example .dev.vars
-   # Then edit .dev.vars with your actual keys
+   **For Local Development & Build:**
+   
+   Create a `.env` file for local builds (required for `npm run build`):
+   ```powershell
+   # Windows PowerShell
+   .\setup-env.ps1
    ```
    
-   **Required variables:**
-   - `OPENWEATHER_API_KEY` - Get from [OpenWeather](https://openweathermap.org/api) (free tier available)
-   - `VITE_MAPBOX_TOKEN` - Get from [Mapbox Account](https://account.mapbox.com/access-tokens/)
-   - `COHERE_API_KEY` - Optional, get from [Cohere](https://cohere.com/) (for AI explanations)
+   Or manually:
+   ```bash
+   # Copy .env.example to .env
+   cp .env.example .env
+   # Then edit .env and set your VITE_MAPBOX_TOKEN
+   ```
    
-   **Note:** `.dev.vars` is gitignored and should never be committed. The `.env.example` file contains placeholders only.
+   **Required for local build:**
+   - `VITE_MAPBOX_TOKEN` - Get from [Mapbox Account](https://account.mapbox.com/access-tokens/)
+     - ⚠️ **Required for local builds** - Vite needs this at build time
+     - This gets injected into the client bundle during build
+   
+   **For Cloudflare Pages (Runtime):**
+   
+   Set these in Cloudflare Pages dashboard (Settings → Environment Variables):
+   - `OPENWEATHER_API_KEY` - Get from [OpenWeather](https://openweathermap.org/api)
+   - `COHERE_API_KEY` - Optional, get from [Cohere](https://cohere.com/)
+   - `VITE_MAPBOX_TOKEN` - Also set here for Cloudflare builds (if using Git integration)
+   
+   **Note:** 
+   - `.env` file is gitignored and should never be committed
+   - `.env.example` contains placeholders only
+   - For manual deployment (`wrangler pages deploy dist`), you need `.env` file locally
+   - For Cloudflare builds (Git integration), set variables in dashboard
 
 4. **Start the development server**
    ```bash
@@ -363,15 +383,35 @@ Generate AI-assisted analysis for an earthquake.
 ## Deployment
 
 ### Quick Deploy (Windows)
-```bash
-deploy.bat
+```powershell
+# Make sure you have .env file with VITE_MAPBOX_TOKEN
+.\deploy.bat
 ```
 
 ### Manual Deploy
-```bash
-npm run build
-npx wrangler pages deploy dist --project-name=quakeweather --branch=main
+
+**⚠️ CRITICAL**: For manual deployment, you **MUST** create a local `.env` file with `VITE_MAPBOX_TOKEN` because the build happens locally and needs the token at build time.
+
+**Step 1: Create .env file** (if not exists)
+```powershell
+# Use the setup script
+.\setup-env.ps1
+
+# Or manually copy .env.example to .env and edit it
+Copy-Item .env.example .env
+# Then edit .env and set your VITE_MAPBOX_TOKEN
 ```
+
+**Step 2: Build and Deploy**
+```powershell
+# Build (Vite automatically loads .env file)
+npm run build
+
+# Deploy
+npm run pages:deploy
+```
+
+**📖 If you get "VITE_MAPBOX_TOKEN environment variable is required" error**, see [FIX_MAPBOX_TOKEN.md](FIX_MAPBOX_TOKEN.md) for the complete solution.
 
 ### Environment Variables in Cloudflare Pages
 Set these in Cloudflare Pages dashboard (Settings → Environment Variables → Production):
