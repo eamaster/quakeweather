@@ -217,9 +217,6 @@ npm run preview       # Preview production build locally
 
 # Deployment
 npm run pages:deploy  # Deploy to Cloudflare Pages (frontend + API via Pages Functions)
-
-# Quick Deploy (Windows)
-deploy.bat           # One-click deployment script
 ```
 
 **Development Workflow:**
@@ -383,15 +380,9 @@ Generate AI-assisted analysis for an earthquake.
 ## Deployment
 
 ### Deployment Gotcha
-- `VITE_MAPBOX_TOKEN` must be present during every build (Production, Preview, Branch, local) or the build will fail; update it in Cloudflare Pages, mark it “Available during build”, then redeploy after any change.
+- `VITE_MAPBOX_TOKEN` must be present during every build (Production, Preview, Branch, local) or the build will fail; update it in Cloudflare Pages, mark it "Available during build", then redeploy after any change.
 
-### Quick Deploy (Windows)
-```powershell
-# Make sure you have .env file with VITE_MAPBOX_TOKEN
-.\deploy.bat
-```
-
-### Manual Deploy
+### Deploy via Cloudflare Pages
 
 **⚠️ CRITICAL**: For manual deployment, you **MUST** create a local `.env` file with `VITE_MAPBOX_TOKEN` because the build happens locally and needs the token at build time.
 

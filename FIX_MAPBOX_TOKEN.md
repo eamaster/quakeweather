@@ -50,11 +50,6 @@ npm run build
 npm run pages:deploy
 ```
 
-Or use the deploy script:
-```powershell
-.\deploy.bat
-```
-
 ## 🔍 Why This Happens
 
 ### Manual Deployment Flow:

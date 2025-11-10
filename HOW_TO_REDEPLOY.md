@@ -71,18 +71,6 @@ If you prefer to deploy from your local machine, use these commands.
    - Visit `https://hesam.me/quakeweather/`
    - Test that the app works correctly
 
-### Quick Deploy Script (Windows)
-
-You can also use the provided deploy script:
-
-```bash
-deploy.bat
-```
-
-This script will:
-1. Build the project (`npm run build`)
-2. Deploy to Cloudflare Pages (`npx wrangler pages deploy dist`)
-3. Show the deployment URL
 
 ## Option 3: Trigger Deployment via Git Push
 
@@ -199,11 +187,6 @@ npm run pages:deploy
 **Quick one-liner:**
 ```powershell
 npm run build; npm run pages:deploy
-```
-
-**Or use the batch script:**
-```powershell
-.\deploy.bat
 ```
 
 **📖 Detailed PowerShell Instructions**: See [REDEPLOY_POWERSHELL.md](REDEPLOY_POWERSHELL.md) for complete PowerShell deployment guide.

@@ -62,14 +62,6 @@ Run it with:
 .\redeploy.ps1
 ```
 
-## Using the Existing Deploy Script (Batch File)
-
-You can also use the existing `deploy.bat` file from PowerShell:
-
-```powershell
-.\deploy.bat
-```
-
 ## Verify Deployment
 
 After deployment, verify it worked:
@@ -123,9 +115,6 @@ npx wrangler pages deployment list --project-name=quakeweather
 ```powershell
 # Full redeploy command
 cd C:\Users\EAMASTER\quakeweather; npm run build; npm run pages:deploy
-
-# Or use the batch script
-.\deploy.bat
 ```
 
 ## After Deployment

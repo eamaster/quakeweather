@@ -6,6 +6,7 @@
   "description": "Map-centric educational web app fusing USGS earthquakes with OpenWeather conditions",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/assert-env.mjs",
     "build": "tsc && vite build",
     "build:check": "node scripts/assert-env.mjs && tsc && vite build",
     "preview": "vite preview",
@@ -18,7 +19,9 @@
     "secret-scan": "npx gitleaks detect --no-banner --verbose || (echo '⚠️  Secrets detected! Please review and remove any hardcoded credentials.' && exit 1)",
     "test:env:missing": "node scripts/test-build-no-token.mjs",
     "test:env:dist": "node scripts/assert-env.mjs && npm run build && node scripts/test-dist-no-placeholder.mjs",
-    "qa:env": "npm run test:env:missing && npm run test:env:dist"
+    "test:base": "npm run build && node scripts/test-dist-base-path.mjs",
+    "qa:env": "npm run test:env:missing && npm run test:env:dist",
+    "qa:full": "npm run test:env:missing && npm run test:env:dist && npm run test:base"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.51.1",
