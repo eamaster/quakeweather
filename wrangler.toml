@@ -1,0 +1,21 @@
+name = "quakeweather-api"
+compatibility_date = "2025-10-03"
+main = "src/server/index.ts"
+
+[vars]
+NODE_VERSION = "20"
+
+# Environment variables (secrets)
+# These will be set via: wrangler secret put OPENWEATHER_API_KEY
+# These will be set via: wrangler secret put MAPBOX_TOKEN
+# These will be set via: wrangler secret put COHERE_API_KEY
+
+# Optional KV namespace for advanced caching
+# [[kv_namespaces]]
+# binding = "CACHE_KV"
+# id = "your_kv_namespace_id"
+
+# Cron trigger for prefetching common feeds (optional)
+# [triggers]
+# crons = ["*/5 * * * *"]
+

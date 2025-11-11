@@ -2,7 +2,7 @@
 
 > **Educational web app** that combines **USGS earthquake data** with **OpenWeather conditions** and provides **AI-generated insights**.
 
-![QuakeWeather](https://img.shields.io/badge/status-production-green) ![License](https://img.shields.io/badge/license-MIT-blue) ![Secret Scanning](https://img.shields.io/badge/secret%20scanning-enabled-success) [![Security Policy](https://img.shields.io/badge/security-policy-blue)](SECURITY.md)
+![QuakeWeather](https://img.shields.io/badge/status-production-green) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## ⚠️ Important Disclaimer
 
@@ -76,7 +76,7 @@
 - **TanStack Query** - Data fetching and caching
 
 ### Backend
-- **Cloudflare Pages Functions** - Serverless edge functions (API runs via `functions/` folder)
+- **Cloudflare Pages Functions** - Serverless edge functions
 - **Hono** - Lightweight web framework
 - **Zod** - Type-safe validation
 
@@ -110,38 +110,15 @@
 
 3. **Set up environment variables**
    
-   **For Local Development & Build:**
-   
-   Create a `.env` file for local builds (required for `npm run build`):
-   ```powershell
-   # Windows PowerShell
-   .\setup-env.ps1
+   Create a `.dev.vars` file in the root directory (this file is gitignored):
+   ```env
+   OPENWEATHER_API_KEY=your_openweather_api_key_here
+   MAPBOX_TOKEN=your_mapbox_token_here
    ```
-   
-   Or manually:
-   ```bash
-   # Copy .env.example to .env
-   cp .env.example .env
-   # Then edit .env and set your VITE_MAPBOX_TOKEN
-   ```
-   
-   **Required for local build:**
-   - `VITE_MAPBOX_TOKEN` - Get from [Mapbox Account](https://account.mapbox.com/access-tokens/)
-     - ⚠️ **Required for local builds** - Vite needs this at build time
-     - This gets injected into the client bundle during build
-   
-   **For Cloudflare Pages (Runtime):**
-   
-   Set these in Cloudflare Pages dashboard (Settings → Environment Variables):
-   - `OPENWEATHER_API_KEY` - Get from [OpenWeather](https://openweathermap.org/api)
-   - `COHERE_API_KEY` - Optional, get from [Cohere](https://cohere.com/)
-   - `VITE_MAPBOX_TOKEN` - Also set here for Cloudflare builds (if using Git integration)
-   
-   **Note:** 
-   - `.env` file is gitignored and should never be committed
-   - `.env.example` contains placeholders only
-   - For manual deployment (`wrangler pages deploy dist`), you need `.env` file locally
-   - For Cloudflare builds (Git integration), set variables in dashboard
+
+   **Getting API Keys:**
+   - **OpenWeather**: Sign up at [OpenWeather](https://openweathermap.org/api) (free tier available)
+   - **Mapbox**: Create a token at [Mapbox Account](https://account.mapbox.com/)
 
 4. **Start the development server**
    ```bash
@@ -152,10 +129,10 @@
 
 5. **Start the API server (in a separate terminal)**
    ```bash
-   pnpm pages:dev
+   pnpm worker:dev
    ```
 
-   The API will be available at `http://localhost:8787` via Cloudflare Pages Functions
+   The API will be available at `http://localhost:8787`
 
 ---
 
@@ -177,7 +154,7 @@ quakeweather/
 │   │   ├── main.tsx              # Entry point with React Query setup
 │   │   ├── types.ts              # TypeScript type definitions
 │   │   └── styles.css            # Global styles and custom scrollbar
-│   └── server/                   # Backend API (Hono + Cloudflare Pages Functions)
+│   └── server/                   # Backend API (Hono + Cloudflare Workers)
 │       ├── routes/               # API route handlers
 │       │   ├── quakes.ts         # USGS earthquake data endpoints
 │       │   ├── weather.ts        # OpenWeather proxy with rate limiting
@@ -191,13 +168,12 @@ quakeweather/
 │       │   ├── utils.ts          # Helper functions
 │       │   └── types.ts          # Shared TypeScript interfaces
 │       └── index.ts              # Hono app initialization
-├── functions/                    # Cloudflare Pages Functions
-│   ├── [[path]].ts               # Catch-all route (Hono server)
-│   └── _middleware.ts            # Security headers middleware
+├── functions/                    # Cloudflare Pages Functions (legacy)
 ├── public/                       # Static assets (favicon, etc.)
 ├── .github/workflows/            # GitHub Actions for deployment
 ├── package.json                  # Dependencies and scripts
-├── vite.config.ts               # Vite configuration
+├── vite.config.ts               # Vite configuration with GitHub Pages base
+├── wrangler.toml                # Cloudflare Workers configuration
 ├── tailwind.config.ts           # Tailwind CSS configuration
 ├── tsconfig.json                # TypeScript configuration
 └── README.md                    # This file
@@ -208,7 +184,8 @@ quakeweather/
 ```bash
 # Development
 npm run dev           # Start Vite dev server (frontend)
-npm run pages:dev     # Start Cloudflare Pages dev server (backend API via Pages Functions)
+npm run worker:dev    # Start Wrangler dev server (backend API)
+npm run pages:dev     # Start Cloudflare Pages dev server
 
 # Build & Type Checking
 npm run build         # Build for production (TypeScript + Vite)
@@ -216,18 +193,17 @@ npm run type-check    # Run TypeScript type checking
 npm run preview       # Preview production build locally
 
 # Deployment
-npm run pages:deploy:prod    # Deploy to PRODUCTION (custom domain: https://hesam.me/quakeweather/)
-npm run pages:deploy:preview # Deploy to PREVIEW (https://main.quakeweather.pages.dev/)
-npm run deploy              # Build and deploy to PRODUCTION (alias for build:check + pages:deploy:prod)
-npm run deploy:preview     # Build and deploy to PREVIEW
-npm run verify:prod         # Verify last deployment is PRODUCTION (not Preview)
+npm run worker:deploy # Deploy backend to Cloudflare Workers
+npm run pages:deploy  # Deploy frontend to Cloudflare Pages
+
+# Quick Deploy (Windows)
+deploy.bat           # One-click deployment script
 ```
 
 **Development Workflow:**
 1. **Frontend**: `npm run dev` (runs on http://localhost:5173)
-2. **Backend API**: `npm run pages:dev` (runs on http://localhost:8787 via Cloudflare Pages Functions)
+2. **Backend**: `npm run worker:dev` (runs on http://localhost:8787)
 3. **Full Stack**: Both servers run simultaneously for development
-4. **API Routes**: All API calls use same-origin `/api/*` paths (no separate Worker service)
 
 ---
 
@@ -302,6 +278,64 @@ Generate AI-assisted analysis for an earthquake.
 
 ---
 
+## Deployment
+
+### 🚀 Multiple Deployment Options
+
+QuakeWeather supports both **Cloudflare Pages** and **GitHub Pages** deployment:
+
+#### Option 1: Cloudflare Pages (Recommended) ⭐
+
+**Quick Deploy (Windows):**
+```bash
+# Just double-click this file:
+deploy.bat
+```
+
+**Manual Deploy:**
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=quakeweather --branch=main
+```
+
+**Set Environment Variables:**
+- Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Pages → Your Project → Settings → Environment Variables
+- Add:
+  - `OPENWEATHER_API_KEY` - Your OpenWeather API key
+  - `MAPBOX_TOKEN` - Your Mapbox access token
+
+**Automatic Deployments:**
+- Connect GitHub repository to Cloudflare Pages
+- Every `git push` to `main` triggers automatic deployment
+- Preview deployments for pull requests
+
+#### Option 2: GitHub Pages
+
+**Automatic Deployment:**
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) for automatic deployment on push to `main`.
+
+**Setup:**
+1. Enable GitHub Pages in repository settings
+2. Set source to "GitHub Actions"
+3. The workflow will automatically deploy to `https://yourusername.github.io/quakeweather`
+
+**Backend Requirements:**
+- GitHub Pages only serves static files
+- Backend APIs must be deployed separately to Cloudflare Workers
+- Frontend automatically detects and uses deployed backend URL
+
+#### Option 3: Cloudflare Workers (Backend Only)
+
+For the API backend:
+```bash
+npx wrangler deploy
+```
+
+**Set Secrets:**
+```bash
+npx wrangler secret put OPENWEATHER_API_KEY
+npx wrangler secret put MAPBOX_TOKEN
+```
 
 ---
 
@@ -336,8 +370,6 @@ Generate AI-assisted analysis for an earthquake.
 ---
 
 ## Architecture
-
-**Deployment Model**: QuakeWeather uses Cloudflare Pages with Pages Functions for both frontend and API. The API runs via `functions/[[path]].ts` which routes all requests to the Hono app in `src/server/index.ts`. No separate Worker service is needed.
 
 ### Caching Strategy
 
@@ -381,100 +413,6 @@ Generate AI-assisted analysis for an earthquake.
 
 ---
 
-## Deployment
-
-### Deployment Gotcha
-- `VITE_MAPBOX_TOKEN` must be present during every build (Production, Preview, Branch, local) or the build will fail; update it in Cloudflare Pages, mark it "Available during build", then redeploy after any change.
-
-### Deploy via Cloudflare Pages
-
-**⚠️ CRITICAL**: For manual deployment, you **MUST** create a local `.env` file with `VITE_MAPBOX_TOKEN` because the build happens locally and needs the token at build time.
-
-**Step 1: Create .env file** (if not exists)
-```powershell
-# Use the setup script
-.\setup-env.ps1
-
-# Or manually copy .env.example to .env and edit it
-Copy-Item .env.example .env
-# Then edit .env and set your VITE_MAPBOX_TOKEN
-```
-
-**Step 2: Build and Deploy**
-```powershell
-# Build (Vite automatically loads .env file)
-npm run build
-
-# Deploy to PRODUCTION (custom domain: https://hesam.me/quakeweather/)
-npm run pages:deploy:prod
-
-# OR deploy to PREVIEW (https://main.quakeweather.pages.dev/)
-npm run pages:deploy:preview
-
-# Verify deployment is PRODUCTION (not Preview)
-npm run verify:prod
-```
-
-**⚠️ IMPORTANT**: 
-- Use `pages:deploy:prod` for Production deployments (serves custom domain)
-- Use `pages:deploy:preview` for Preview deployments (testing)
-- Always verify with `verify:prod` after deploying to ensure it went to Production
-
-**📖 If you get "VITE_MAPBOX_TOKEN environment variable is required" error**, ensure you have created a local `.env` file with `VITE_MAPBOX_TOKEN` set (see "Set up environment variables" section above).
-
-### Environment Variables in Cloudflare Pages
-Set these in Cloudflare Pages dashboard (Settings → Environment Variables → Production):
-
-1. **VITE_MAPBOX_TOKEN** (Required for frontend)
-   - Your Mapbox public access token
-   - ⚠️ **Must be marked as "Available during build"** for Vite to inject it
-   - Get your token from: https://account.mapbox.com/access-tokens/
-   - This is injected at build time into the client bundle
-
-2. **OPENWEATHER_API_KEY** (Required for backend API)
-   - Your OpenWeather API key
-   - Only needed at runtime in Pages Functions (not during build)
-   - Get your key from: https://openweathermap.org/api
-
-3. **COHERE_API_KEY** (Optional, for AI explanations)
-   - Your Cohere API key
-   - Only needed at runtime in Pages Functions (not during build)
-   - Get your key from: https://cohere.com/
-
-**⚠️ Important**: After setting environment variables, you must **redeploy** the project for them to take effect. Environment variables are only applied to new builds.
-
-**🔄 How to Redeploy**: 
-- **Via Dashboard**: Go to Deployments tab → Click "Retry deployment" on latest deployment
-- **Via Command Line**: Run `npm run build && npm run pages:deploy:prod`
-- **Via Git**: Push a commit to trigger automatic deployment
-
-**Note**: The API runs via Cloudflare Pages Functions (in the `functions/` folder), not a separate Worker service.
-
-### ⚠️ Important: Cleanup Old Worker Service
-If you have an old `quakeweather-api` Worker service in your Cloudflare dashboard, **delete it** - it's no longer needed. The API now runs via Cloudflare Pages Functions (in the `functions/` folder), not a separate Worker service.
-
-## Troubleshooting
-
-### Map doesn't load
-- Verify `VITE_MAPBOX_TOKEN` is set in build environment or `.dev.vars`
-- Check browser console for errors
-- Ensure Pages dev server is running for local development: `npm run pages:dev`
-
-### Weather API errors
-- Verify `OPENWEATHER_API_KEY` is set in Cloudflare Pages environment variables
-- Check rate limits (30 requests per 10 minutes)
-- Restart Pages dev server after adding environment variables: `npm run pages:dev`
-
-### Build fails
-- Run `npm install` to ensure all dependencies are installed
-- Check that `VITE_MAPBOX_TOKEN` is set for frontend builds
-- Verify TypeScript compilation: `npm run type-check`
-
-### Rate limit exceeded
-- Wait 10 minutes (limit: 30 requests per 10 minutes per IP)
-- Cache is enabled to reduce API calls
-- Consider increasing rate limit in production if needed
-
 ## Contributing
 
 Contributions are welcome! Please follow these guidelines:
@@ -484,8 +422,6 @@ Contributions are welcome! Please follow these guidelines:
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
@@ -704,35 +640,36 @@ npm run train:model
 
 ### 🌐 Production URLs
 
-- **Live App**: https://hesam.me/quakeweather/ (frontend + API via Pages Functions)
-- **Cloudflare Pages**: https://quakeweather.hesam.me (alternative domain, if configured)
-
-**⚠️ Important**: The app is deployed at `/quakeweather/` on `hesam.me`. All asset paths and API routes are configured to work with this base path. The Vite build is configured with `base: '/quakeweather/'` to ensure all assets load correctly.
+- **Cloudflare Pages**: https://quakeweather.hesam.me
+- **GitHub Pages**: https://hesam.me/quakeweather
+- **Backend API**: https://quakeweather-api.smah0085.workers.dev
 
 ### 🔧 Development URLs
 
 - **Local Frontend**: http://localhost:5173
-- **Local Backend API**: http://localhost:8787 (via `npm run pages:dev`)
+- **Local Backend**: http://localhost:8787
 
 ---
 
-## Security
-
-This project follows security best practices:
-- ✅ **Secret Scanning**: Automated scanning via [GitHub Actions](.github/workflows/secret-scan.yml) using [gitleaks](https://github.com/gitleaks/gitleaks)
-- ✅ **Environment Variables Only**: All API keys stored in environment variables, never hardcoded
-- ✅ **Git Protection**: `.env`, `.env.*`, and `.dev.vars` files are gitignored
-- ✅ **Server-Side Proxy**: All external API calls go through backend proxy
-
-**Documentation:**
-- See [SECURITY.md](SECURITY.md) for security policy and key rotation procedures
-- See [SCRIPTS_TO_RUN.md](SCRIPTS_TO_RUN.md) if you need to scrub git history
-
 ## Support
+
+### 📚 Documentation
+
+- **Quick Start**: See `START_HERE.md` for immediate setup
+- **Deployment Guide**: See `HOW_TO_DEPLOY.md` for deployment options
+- **Troubleshooting**: See `TROUBLESHOOTING.md` for common issues
+- **Project Overview**: See `PROJECT_OVERVIEW.md` for technical details
 
 ### 🐛 Issues & Questions
 
 For issues, questions, or suggestions, please [open an issue](https://github.com/eamaster/quakeweather/issues) on GitHub.
+
+### 🔑 API Keys
+
+**Current Working API Key**: `REMOVED_OPENWEATHER_API_KEY`
+- ✅ Works with OpenWeather One Call API 3.0
+- ✅ Works with OpenWeather Current Weather API
+- ✅ Includes historical weather data access
 
 ---
 

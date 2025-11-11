@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/quakeweather/', // Base path for deployment on hesam.me/quakeweather/
+  base: '/quakeweather/', // GitHub Pages base path
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src/client'),
@@ -25,16 +25,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy API requests to Pages dev server
-      // Works with both /api/* and /quakeweather/api/* paths
       '/api': {
         target: 'http://localhost:8787',
         changeOrigin: true,
-      },
-      '/quakeweather/api': {
-        target: 'http://localhost:8787',
-        changeOrigin: true,
-        rewrite: (path) => path.replace('/quakeweather', ''),
       },
     },
   },

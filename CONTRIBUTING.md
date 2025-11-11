@@ -29,7 +29,7 @@ pnpm install
 
 # Start development servers
 pnpm dev           # Frontend (port 5173)
-pnpm pages:dev     # Backend API (port 8787 via Cloudflare Pages Functions)
+pnpm worker:dev    # Backend (port 8787)
 ```
 
 ## Pull Request Process

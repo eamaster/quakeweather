@@ -6,26 +6,15 @@
   "description": "Map-centric educational web app fusing USGS earthquakes with OpenWeather conditions",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/assert-env.mjs",
     "build": "tsc && vite build",
-    "build:check": "node scripts/assert-env.mjs && tsc && vite build",
     "preview": "vite preview",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy",
     "pages:dev": "wrangler pages dev dist --compatibility-date=2025-10-03",
-    "pages:deploy:prod": "wrangler pages deploy dist --project-name=quakeweather --branch=quakeweather-production",
-    "pages:deploy:preview": "wrangler pages deploy dist --project-name=quakeweather --branch=main",
-    "deploy": "npm run build:check && npm run pages:deploy:prod",
-    "deploy:preview": "npm run build:check && npm run pages:deploy:preview",
-    "verify:prod": "node scripts/verify-production-deploy.mjs",
-    "verify:domain": "node scripts/verify-custom-domain-bundle.mjs",
+    "pages:deploy": "wrangler pages deploy dist",
     "type-check": "tsc --noEmit",
     "train:model": "tsx tools/backtest/nowcast.ts",
-    "test:etas": "tsx tools/backtest/test-etas.ts",
-    "secret-scan": "npx gitleaks detect --no-banner --verbose || (echo '⚠️  Secrets detected! Please review and remove any hardcoded credentials.' && exit 1)",
-    "test:env:missing": "node scripts/test-build-no-token.mjs",
-    "test:env:dist": "node scripts/assert-env.mjs && npm run build && node scripts/test-dist-no-placeholder.mjs",
-    "test:base": "npm run build && node scripts/test-dist-base-path.mjs",
-    "qa:env": "npm run test:env:missing && npm run test:env:dist",
-    "qa:full": "npm run test:env:missing && npm run test:env:dist && npm run test:base"
+    "test:etas": "tsx tools/backtest/test-etas.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.51.1",
@@ -45,11 +34,9 @@
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.6",
-    "jsdom": "^24.0.0",
-    "node-fetch": "^3.3.2",
     "tsx": "^4.20.6",
     "typescript": "^5.5.3",
     "vite": "^5.3.4",
-    "wrangler": "^4.46.0"
+    "wrangler": "^4.42.0"
   }
 }

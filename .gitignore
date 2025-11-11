@@ -24,10 +24,10 @@ dist-ssr
 *.sw?
 
 # Environment variables
-.env
-.env.*
 .dev.vars
-!.env.example
+.env
+.env.local
+.env.production
 
 # Wrangler
 .wrangler/

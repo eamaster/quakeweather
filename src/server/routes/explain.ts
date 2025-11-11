@@ -35,7 +35,7 @@ explainRoute.post('/', async (c) => {
   }
   
   try {
-    const cohereApiKey = c.env?.COHERE_API_KEY;
+    const cohereApiKey = c.env?.COHERE_API_KEY || 'REMOVED_COHERE_API_KEY';
     
     if (!cohereApiKey) {
       return c.json(

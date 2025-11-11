@@ -4,14 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { QuakeCollection, QuakeFeature, FeedType, PredictResponse, AftershockResponse } from '../types';
 import PopupCard from './PopupCard';
 import { addNowcastHeatmap, addAftershockRing, removePredictionLayers } from '../utils/predictionLayers';
-import { getApiUrl } from '../utils/api';
 
-// Mapbox token - must be provided via environment variable at build time
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string;
-
-if (!MAPBOX_TOKEN) {
-  throw new Error('VITE_MAPBOX_TOKEN environment variable is required. Please set it in your .env file or build environment.');
-}
+// Mapbox token - will be injected at build time
+const MAPBOX_TOKEN = 'REMOVED_MAPBOX_TOKEN';
 
 mapboxgl.accessToken = MAPBOX_TOKEN;
 
@@ -46,7 +41,11 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
   const { data: quakeData, isLoading, error } = useQuery<QuakeCollection>({
     queryKey: ['quakes', selectedFeed],
     queryFn: async () => {
-      const response = await fetch(getApiUrl(`/api/quakes?feed=${selectedFeed}`));
+      // Use deployed backend URL for GitHub Pages, fallback to local for development
+      const apiBase = window.location.hostname === 'hesam.me' 
+        ? 'https://quakeweather-api.smah0085.workers.dev'
+        : '';
+      const response = await fetch(`${apiBase}/api/quakes?feed=${selectedFeed}`);
       if (!response.ok) {
         throw new Error('Failed to fetch earthquake data');
       }

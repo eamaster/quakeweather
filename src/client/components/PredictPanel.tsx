@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PredictResponse, ExplainResponse } from '../types';
-import { getApiUrl } from '../utils/api';
 
 interface PredictPanelProps {
   onShowHeatmap: (data: PredictResponse | null) => void;
@@ -23,8 +22,11 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
     queryKey: ['predict', horizon, M0, gridSize],
     staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
+      const apiBase = window.location.hostname === 'hesam.me' 
+        ? 'https://quakeweather-api.smah0085.workers.dev'
+        : '';
       const response = await fetch(
-        getApiUrl(`/api/predict?horizon=${horizon}&cellDeg=${gridSize}`),
+        `${apiBase}/api/predict?horizon=${horizon}&cellDeg=${gridSize}`,
         {
           headers: {
             'Cache-Control': 'max-age=900', // Cache for 15 minutes
@@ -49,6 +51,10 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
     queryFn: async () => {
       if (!predictData) throw new Error('No prediction data');
       
+      const apiBase = window.location.hostname === 'hesam.me' 
+        ? 'https://quakeweather-api.smah0085.workers.dev'
+        : '';
+        
       const topCells = (predictData as PredictResponse).cells
         ?.sort((a: any, b: any) => b.probability - a.probability)
         .slice(0, 5) || [];
@@ -71,7 +77,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         throw new Error('No prediction cells available for explanation');
       }
       
-      const response = await fetch(getApiUrl(`/api/explain`), {
+      const response = await fetch(`${apiBase}/api/explain`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

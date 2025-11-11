@@ -34,36 +34,19 @@ interface PredictModel {
 // Cache for loaded model
 let cachedModel: PredictModel | null = null;
 
-async function loadModel(requestUrl?: string, originalUrl?: string): Promise<PredictModel> {
+async function loadModel(): Promise<PredictModel> {
   if (cachedModel) return cachedModel as PredictModel;
   
   try {
-    // Fetch model from the current origin with base path
-    // Use original URL if available (from X-Original-Url header) to get correct base path
-    const urlToUse = originalUrl || requestUrl;
-    let modelUrl: string;
-    if (urlToUse) {
-      const url = new URL(urlToUse);
-      // Extract base path from request URL (e.g., /quakeweather/api/predict -> /quakeweather)
-      const pathParts = url.pathname.split('/').filter(p => p);
-      const basePath = pathParts.length > 0 && pathParts[0] === 'quakeweather' 
-        ? '/quakeweather' 
-        : '';
-      modelUrl = `${url.origin}${basePath}/models/nowcast.json`;
-    } else {
-      // Fallback: try to detect base path from current location or use default
-      modelUrl = '/quakeweather/models/nowcast.json';
-    }
-    
-    const response = await fetch(modelUrl);
+    // In production, this would be fetched from public/models/nowcast.json
+    // For now, we'll use a placeholder model
+    const response = await fetch('https://quakeweather.hesam.me/quakeweather/models/nowcast.json');
     if (response.ok) {
       cachedModel = await response.json() as PredictModel;
       return cachedModel as PredictModel;
-    } else {
-      console.log(`Failed to load model: ${response.status} ${response.statusText}`);
     }
   } catch (error) {
-    console.log('Could not load trained model, using placeholder:', error);
+    console.log('Could not load trained model, using placeholder');
   }
   
   // Placeholder model (will be replaced after training)
@@ -165,9 +148,7 @@ predictRoute.get('/', async (c) => {
     const cellDegParam = c.req.query('cellDeg');
     const horizonParam = c.req.query('horizon');
     
-    // Get original URL from header (set by Pages Function handler for base path support)
-    const originalUrl = c.req.header('X-Original-Url') || c.req.url;
-    const model = await loadModel(c.req.url, originalUrl);
+    const model = await loadModel();
     
     const bbox = bboxParam 
       ? bboxParam.split(',').map(Number) as [number, number, number, number]
