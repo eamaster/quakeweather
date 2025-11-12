@@ -8,13 +8,15 @@ import { addNowcastHeatmap, addAftershockRing, removePredictionLayers } from '..
 // Mapbox token - set via environment variable
 // IMPORTANT: Never commit actual tokens to Git. Use environment variables.
 // For Vite: Create .env file with VITE_MAPBOX_TOKEN=your_token_here
+// For Cloudflare Pages: Set VITE_MAPBOX_TOKEN in Environment Variables
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
-if (!MAPBOX_TOKEN) {
+// Only set access token if it exists
+if (MAPBOX_TOKEN) {
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+} else {
   console.error('VITE_MAPBOX_TOKEN environment variable is not set. Map will not load.');
 }
-
-mapboxgl.accessToken = MAPBOX_TOKEN;
 
 interface MapProps {
   selectedFeed: FeedType;
@@ -63,6 +65,12 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+    
+    // Don't initialize map if token is missing
+    if (!MAPBOX_TOKEN) {
+      console.error('Cannot initialize map: VITE_MAPBOX_TOKEN is not set');
+      return;
+    }
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -302,6 +310,43 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
       addAftershockRing(map.current, aftershockData);
     }
   }, [predictionData, aftershockData]);
+
+  // Show error if Mapbox token is missing
+  if (!MAPBOX_TOKEN) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md mx-4">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Mapbox Token Not Configured
+              </h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                The map cannot load because the <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">VITE_MAPBOX_TOKEN</code> environment variable is not set.
+              </p>
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-3 mb-4">
+                <p className="text-xs text-blue-800 dark:text-blue-200 font-medium mb-2">To fix this:</p>
+                <ol className="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-decimal list-inside">
+                  <li>Go to Cloudflare Pages dashboard</li>
+                  <li>Navigate to Settings → Environment Variables</li>
+                  <li>Add <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">VITE_MAPBOX_TOKEN</code> with your Mapbox token</li>
+                  <li>Redeploy the Pages project</li>
+                </ol>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Get your Mapbox token at: <a href="https://account.mapbox.com/access-tokens/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">account.mapbox.com</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full">
