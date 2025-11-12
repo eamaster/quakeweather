@@ -1,247 +1,222 @@
 # 🚀 How to Deploy QuakeWeather
 
-## ✅ Deployment Method: Direct Cloudflare Pages
+## Deployment Method: Cloudflare Workers + Pages
 
-**GitHub Actions has been removed** - We're using direct Cloudflare Pages deployment instead, which is:
-- ✅ Simpler (no GitHub Secrets needed)
-- ✅ More reliable (fewer points of failure)
-- ✅ Faster (direct deployment)
-- ✅ Better integrated (Cloudflare native)
+QuakeWeather uses Cloudflare's edge infrastructure for global performance and scalability.
 
 ---
 
-## 🎯 Two Ways to Deploy
+## Prerequisites
 
-### Method 1: One-Click Deploy (Windows) ⭐ **EASIEST**
+1. **Cloudflare Account** - Sign up at [Cloudflare](https://dash.cloudflare.com/)
+2. **Wrangler CLI** - Install globally: `npm install -g wrangler`
+3. **API Keys**:
+   - **OpenWeather**: [Get API key](https://openweathermap.org/api)
+   - **Mapbox**: [Get access token](https://account.mapbox.com/)
+   - **Cohere** (optional): [Get API key](https://cohere.com/)
 
-Just double-click the file:
-```
-deploy.bat
-```
+---
 
-That's it! The script will:
-1. Build your app
-2. Deploy to Cloudflare Pages
-3. Show you the live URL
+## 🔧 Deploy Backend (Cloudflare Worker)
 
-### Method 2: Manual Deploy (Any OS)
+### Step 1: Set Environment Secrets
 
-Run in terminal:
 ```bash
-npm run build
-npx wrangler pages deploy dist --project-name=quakeweather --branch=main
+# OpenWeather API Key (REQUIRED)
+npx wrangler secret put OPENWEATHER_API_KEY
+# Enter your OpenWeather API key when prompted
+
+# Mapbox Token (REQUIRED)
+npx wrangler secret put MAPBOX_TOKEN
+# Enter your Mapbox token when prompted
+
+# Cohere API Key (OPTIONAL - for AI explanations)
+npx wrangler secret put COHERE_API_KEY
+# Enter your Cohere API key when prompted
+```
+
+### Step 2: Deploy Worker
+
+```bash
+npx wrangler deploy
+```
+
+### Step 3: Verify
+
+Your API will be live at: `https://quakeweather-api.smah0085.workers.dev`
+
+Test it:
+```bash
+curl https://quakeweather-api.smah0085.workers.dev/api/health
 ```
 
 ---
 
-## 🔄 Setup Automatic Deployments (Optional but Recommended)
+## 🌐 Deploy Frontend (Cloudflare Pages)
 
-Want deployments to happen automatically on every `git push`? Set this up once:
+### Method 1: Manual Deployment
 
-### Step 1: Connect GitHub to Cloudflare Pages
+1. **Build the frontend:**
+   ```bash
+   npm run build
+   ```
 
-1. **Go to:** https://dash.cloudflare.com/767ce92674d0bd477eef696c995faf16/pages/view/quakeweather
+2. **Deploy to Cloudflare Pages:**
+   ```bash
+   npx wrangler pages deploy dist --project-name=quakeweather --branch=main
+   ```
 
-2. **Click "Settings" tab** → **"Builds & deployments"**
+3. **Set environment variable in Cloudflare Pages:**
+   - Go to: Pages → Your Project → Settings → Environment Variables
+   - Add: `VITE_MAPBOX_TOKEN` = your_mapbox_token_here
+   - Save and redeploy
 
-3. **Click "Connect to Git"** or **"Configure build"**
+### Method 2: Automatic Deployment (Recommended)
 
-4. **Connect GitHub:**
-   - Click "Connect GitHub account"
+1. **Go to Cloudflare Dashboard:**
+   https://dash.cloudflare.com/[your-account-id]/pages
+
+2. **Click "Create a project" or select existing project**
+
+3. **Connect to Git:**
+   - Click "Connect to Git"
+   - Select GitHub
    - Authorize Cloudflare
    - Select repository: `eamaster/quakeweather`
-   - Branch: `main`
+   - Select branch: `main`
 
-5. **Build Configuration:**
+4. **Configure Build Settings:**
    ```
-   Framework preset: None (or Vite)
+   Framework preset: Vite
    Build command: npm run build
    Build output directory: dist
    Root directory: (leave empty)
-   Node version: 20
    ```
 
-6. **Add Environment Variables:**
-   
-   Click **"Environment variables"** section and add:
-   
-   | Variable name | Value | Environment |
-   |--------------|--------|-------------|
-   | `OPENWEATHER_API_KEY` | `REMOVED_OPENWEATHER_API_KEY` | Production |
-   | `MAPBOX_TOKEN` | `REMOVED_MAPBOX_TOKEN` | Production |
-
-7. **Click "Save and Deploy"**
-
-✅ **Done!** Now every `git push` will automatically deploy to Cloudflare Pages!
-
----
-
-## 🌐 Your App URLs
-
-After deployment, your app is available at:
-
-- **Production:** https://quakeweather.pages.dev
-- **Branch URL:** https://main.quakeweather.pages.dev
-- **Cloudflare Dashboard:** https://dash.cloudflare.com/767ce92674d0bd477eef696c995faf16/pages/view/quakeweather
-
----
-
-## ⚙️ Environment Variables (REQUIRED)
-
-Your app **MUST** have these environment variables set in Cloudflare Pages:
-
-1. **Go to:** https://dash.cloudflare.com/767ce92674d0bd477eef696c995faf16/pages/view/quakeweather/settings/environment-variables
-
-2. **Add these 2 variables:**
-
-   **Variable 1: OPENWEATHER_API_KEY**
-   - Name: `OPENWEATHER_API_KEY`
-   - Value: `REMOVED_OPENWEATHER_API_KEY`
+5. **Add Environment Variables:**
+   - Click "Environment variables"
+   - Add: `VITE_MAPBOX_TOKEN` = your_mapbox_token_here
    - Environment: Production
-   - Click "Save"
+   - Save
 
-   **Variable 2: MAPBOX_TOKEN**
-   - Name: `MAPBOX_TOKEN`
-   - Value: `REMOVED_MAPBOX_TOKEN`
-   - Environment: Production
-   - Click "Save"
+6. **Save and Deploy**
 
-3. **Redeploy after adding variables** (run `deploy.bat` or use Method 2)
+**Result:** Every `git push` to `main` will automatically trigger a deployment!
 
 ---
 
-## 🔄 Typical Workflow
+## 🔐 Environment Variables Configuration
 
-### Daily Development:
+### For Workers (Backend API)
+
+Set these using Wrangler CLI:
+
+| Variable | Required | How to Set |
+|----------|----------|------------|
+| `OPENWEATHER_API_KEY` | ✅ Yes | `npx wrangler secret put OPENWEATHER_API_KEY` |
+| `MAPBOX_TOKEN` | ✅ Yes | `npx wrangler secret put MAPBOX_TOKEN` |
+| `COHERE_API_KEY` | ⚠️ Optional | `npx wrangler secret put COHERE_API_KEY` |
+
+### For Pages (Frontend)
+
+Set these in Cloudflare Pages dashboard:
+
+| Variable | Required | Where to Set |
+|----------|----------|--------------|
+| `VITE_MAPBOX_TOKEN` | ✅ Yes | Pages → Settings → Environment Variables |
+
+**Important:** Frontend environment variables must be prefixed with `VITE_` to be accessible in the client code.
+
+---
+
+## 🌐 Your Deployment URLs
+
+After deployment:
+
+- **Backend API**: `https://quakeweather-api.smah0085.workers.dev`
+- **Frontend (Pages)**: `https://quakeweather.pages.dev`
+- **Custom Domain**: `https://hesam.me/quakeweather` (if configured)
+
+---
+
+## 🔄 Deployment Workflow
+
+### For Regular Updates:
 
 1. Make code changes
-2. Test locally: `npm run dev`
-3. Commit changes: `git add . && git commit -m "your message"`
-4. Push to GitHub: `git push origin main`
-5. Deploy:
-   - **If auto-deploy is set up:** Done! ✅ (deploys automatically)
-   - **If not:** Run `deploy.bat` or deploy manually
+2. Test locally (if needed)
+3. Commit: `git add . && git commit -m "your message"`
+4. Push: `git push origin main`
+5. **If auto-deploy is configured**: Deployment happens automatically ✅
+6. **If not**: Run `npx wrangler deploy` for backend or `npx wrangler pages deploy dist` for frontend
+7. Verify changes at your live URL
 
 ---
 
-## 🌐 Custom Domain Setup
+## 🎯 Custom Domain Setup
 
-### For `https://quakeweather.hesam.me` (Recommended)
+### Option 1: Subdomain (quakeweather.yourdomain.com)
 
-1. **Go to:** https://dash.cloudflare.com/767ce92674d0bd477eef696c995faf16/pages/view/quakeweather/settings/domains
+1. Go to: Pages → Your Project → Custom domains
+2. Click "Set up a custom domain"
+3. Enter: `quakeweather.yourdomain.com`
+4. Cloudflare automatically configures DNS ✅
 
-2. **Click "Set up a custom domain"**
+### Option 2: Path-based (yourdomain.com/quakeweather)
 
-3. **Enter:** `quakeweather.hesam.me`
-
-4. **Click "Activate domain"**
-
-5. Cloudflare automatically configures DNS ✅
-
-**Done!** Your app will be live at: `https://quakeweather.hesam.me`
-
-### For `https://hesam.me/quakeweather` (Advanced)
-
-This requires a Cloudflare Worker to handle path routing. See `CLOUDFLARE_DIRECT_SETUP.md` for the Worker code (lines 75-120).
+Requires a Cloudflare Worker for routing. Contact support or see Cloudflare documentation.
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Issue: "Build failed"
-**Check:** 
-- Make sure `package.json` and `package-lock.json` are committed
-- Verify build command: `npm run build`
+### Build Failed
+
+**Check:**
+- Ensure `package.json` and `package-lock.json` are committed
+- Verify Node version in build settings (use 20)
 - Check build logs in Cloudflare dashboard
 
-### Issue: "APIs return 401/403 errors"
-**Solution:** 
-- Environment variables not set in Cloudflare Pages
-- Go to settings and add `OPENWEATHER_API_KEY` and `MAPBOX_TOKEN`
-- Redeploy after adding variables
+### API Returns 500 Errors
 
-### Issue: "Map doesn't load"
-**Solution:** 
-- `MAPBOX_TOKEN` not set correctly
-- Check that the token is set in Cloudflare Pages (not GitHub)
-- Make sure you redeployed after adding the variable
+**Solution:**
+- Environment variables not set in Cloudflare Workers
+- Run `npx wrangler secret put <KEY_NAME>` for each required secret
+- Redeploy worker
 
-### Issue: "GitHub Actions still running/failing"
-**Solution:** 
-- ✅ **FIXED!** GitHub Actions workflow has been completely removed
-- The project now uses direct Cloudflare deployment
-- No more GitHub Actions errors!
+### Map Doesn't Load
 
----
+**Solution:**
+- `VITE_MAPBOX_TOKEN` not set in Cloudflare Pages
+- Go to Pages → Settings → Environment Variables
+- Add the variable and redeploy
 
-## 📊 Deployment Comparison
+### Weather API Returns 401/403
 
-| Feature | GitHub Actions | Direct Cloudflare |
-|---------|---------------|-------------------|
-| Setup complexity | 🟡 Medium | 🟢 Simple |
-| Requires GitHub Secrets | ❌ Yes | ✅ No |
-| Automatic deploys | ✅ Yes | ✅ Yes (after setup) |
-| Manual deploys | ✅ Yes | ✅ Yes |
-| Build logs | GitHub | Cloudflare |
-| Preview deployments | Need config | ✅ Automatic |
-| Rollback | Manual | ✅ One-click |
-| **Current method** | ❌ Removed | ✅ **Active** |
+**Solution:**
+- `OPENWEATHER_API_KEY` not set or invalid
+- Rotate your API key if exposed
+- Set new key with `npx wrangler secret put OPENWEATHER_API_KEY`
 
 ---
 
-## ✅ Quick Deployment Checklist
+## 🔒 Security Best Practices
 
-For first-time setup:
-- [ ] Environment variables set in Cloudflare Pages
-- [ ] Test manual deployment with `deploy.bat`
-- [ ] (Optional) Set up automatic deployments from GitHub
-- [ ] (Optional) Configure custom domain
-
-For regular deployments:
-- [ ] Make your code changes
-- [ ] Commit and push to GitHub
-- [ ] Deploy (automatic or run `deploy.bat`)
-- [ ] Verify at your live URL
-
----
-
-## 🎯 Why We Don't Use GitHub Actions
-
-Previously, we used GitHub Actions, but we switched to direct Cloudflare deployment because:
-
-1. ❌ **GitHub Actions requires managing secrets in two places** (GitHub + Cloudflare)
-2. ❌ **More points of failure** (GitHub API, GitHub runner, Cloudflare API)
-3. ❌ **Harder to debug** (logs split between GitHub and Cloudflare)
-4. ❌ **No preview deployments by default**
-
-Direct Cloudflare Pages deployment is:
-
-1. ✅ **Everything in one place** (Cloudflare dashboard)
-2. ✅ **Native integration** (built for Cloudflare Pages)
-3. ✅ **Automatic preview deployments** (every PR gets a URL)
-4. ✅ **Simpler troubleshooting** (all logs in one place)
-5. ✅ **One-click rollbacks**
+1. **Never commit API keys** to Git
+2. **Use `.gitignore`** for `.env` and `.dev.vars` files
+3. **Rotate exposed credentials immediately**
+4. **Use Wrangler secrets** for production
+5. **Review commits** before pushing
 
 ---
 
 ## 📚 Additional Resources
 
-- **Deployment Status:** See `DEPLOYMENT_STATUS.md`
-- **Complete Setup Guide:** See `CLOUDFLARE_DIRECT_SETUP.md`
-- **Project Overview:** See `README.md`
-- **Cloudflare Dashboard:** https://dash.cloudflare.com/767ce92674d0bd477eef696c995faf16/pages
+- **README**: See `README.md` for project overview
+- **Contributing**: See `CONTRIBUTING.md` for contribution guidelines
+- **Cloudflare Docs**: [Workers](https://developers.cloudflare.com/workers/) | [Pages](https://developers.cloudflare.com/pages/)
+- **Wrangler Docs**: [CLI Reference](https://developers.cloudflare.com/workers/wrangler/)
 
 ---
 
-## 🚀 Ready to Deploy?
-
-**Windows users:** Just double-click `deploy.bat` ✅
-
-**Everyone else:** Run `npx wrangler pages deploy dist --project-name=quakeweather --branch=main`
-
-**Need automatic deployments?** Follow the setup guide above (takes 5 minutes)
-
----
-
-**Your app is ready to go! Happy deploying! 🎉**
-
+**Ready to deploy? Follow the steps above and your app will be live in minutes! 🎉**

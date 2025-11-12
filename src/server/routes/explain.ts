@@ -35,13 +35,13 @@ explainRoute.post('/', async (c) => {
   }
   
   try {
-    const cohereApiKey = c.env?.COHERE_API_KEY || 'REMOVED_COHERE_API_KEY';
+    const cohereApiKey = c.env?.COHERE_API_KEY;
     
     if (!cohereApiKey) {
       return c.json(
         {
           error: 'Cohere API not configured',
-          message: 'COHERE_API_KEY environment variable is required for this feature',
+          message: 'COHERE_API_KEY environment variable is required for AI explanations',
         },
         501
       );

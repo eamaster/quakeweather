@@ -1,6 +1,6 @@
 # Contributing to QuakeWeather
 
-Thank you for your interest in contributing to QuakeWeather! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to QuakeWeather!
 
 ## Code of Conduct
 
@@ -19,24 +19,44 @@ Thank you for your interest in contributing to QuakeWeather! This document provi
 
 ## Development Setup
 
-See the main [README.md](README.md) for detailed setup instructions.
+### Prerequisites
 
-### Quick Start
+- Node.js 20+
+- Wrangler CLI: `npm install -g wrangler`
+- API keys from OpenWeather, Mapbox (see README.md)
+
+### Setup
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
-# Start development servers
-pnpm dev           # Frontend (port 5173)
-pnpm worker:dev    # Backend (port 8787)
+# Create environment files (use .example files as templates)
+cp .dev.vars.example .dev.vars
+# Edit .dev.vars and add your API keys
+
+# Create .env for frontend
+echo "VITE_MAPBOX_TOKEN=your_mapbox_token" > .env
+```
+
+### Testing
+
+```bash
+# Type checking
+npm run type-check
+
+# ETAS unit tests
+npm run test:etas
+
+# Build
+npm run build
 ```
 
 ## Pull Request Process
 
 1. **Update documentation** if you're adding new features
 2. **Add tests** for new functionality where applicable
-3. **Ensure type checking passes**: `pnpm type-check`
+3. **Ensure type checking passes**: `npm run type-check`
 4. **Update the README.md** with details of changes if needed
 5. **Reference any related issues** in your PR description
 
@@ -80,21 +100,14 @@ Use clear, descriptive commit messages:
 - `refactor: simplify cache key generation`
 - `style: improve mobile responsiveness`
 
-## Testing
+## Security
 
-While we don't have comprehensive tests yet, please:
+**⚠️ NEVER commit API keys or secrets to Git!**
 
-1. **Test manually** all changes
-2. **Verify on different browsers** (Chrome, Firefox, Safari)
-3. **Check mobile responsiveness**
-4. **Test with different data scenarios**
-
-## Feature Requests & Bug Reports
-
-- Use GitHub Issues for both
-- Provide detailed reproduction steps for bugs
-- Include screenshots/videos when relevant
-- Tag issues appropriately
+- Use `.env` and `.dev.vars` files (they're gitignored)
+- Use environment variables for all sensitive data
+- Check your commits before pushing
+- If you accidentally expose credentials, rotate them immediately
 
 ## Questions?
 
@@ -103,4 +116,3 @@ Feel free to open an issue for any questions about contributing!
 ---
 
 **Thank you for helping make QuakeWeather better!**
-

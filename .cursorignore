@@ -1,0 +1,17 @@
+# Cursor-specific ignore file
+# Prevents sensitive files from being read by AI
+
+# Environment variables containing API keys
+.dev.vars
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+.wrangler/
+

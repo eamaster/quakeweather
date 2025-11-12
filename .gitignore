@@ -23,11 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
+# Environment variables (NEVER COMMIT THESE!)
 .dev.vars
 .env
 .env.local
 .env.production
+.env.*.local
+*.vars
 
 # Wrangler
 .wrangler/

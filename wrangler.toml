@@ -6,9 +6,11 @@ main = "src/server/index.ts"
 NODE_VERSION = "20"
 
 # Environment variables (secrets)
-# These will be set via: wrangler secret put OPENWEATHER_API_KEY
-# These will be set via: wrangler secret put MAPBOX_TOKEN
-# These will be set via: wrangler secret put COHERE_API_KEY
+# REQUIRED: Set these using Wrangler CLI before deploying:
+#   npx wrangler secret put OPENWEATHER_API_KEY
+#   npx wrangler secret put MAPBOX_TOKEN  
+#   npx wrangler secret put COHERE_API_KEY (optional)
+# NEVER commit actual API keys to Git!
 
 # Optional KV namespace for advanced caching
 # [[kv_namespaces]]

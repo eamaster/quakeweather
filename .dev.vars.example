@@ -1,0 +1,16 @@
+# Cloudflare Workers Environment Variables
+# Copy this file to .dev.vars for local Cloudflare Workers development
+# For production, use: npx wrangler secret put <KEY_NAME>
+
+# OpenWeather API Key (REQUIRED)
+# Get your API key at: https://openweathermap.org/api
+OPENWEATHER_API_KEY=your_openweather_api_key_here
+
+# Mapbox Token (REQUIRED for backend if needed)
+# Get your token at: https://account.mapbox.com/
+MAPBOX_TOKEN=your_mapbox_token_here
+
+# Cohere API Key (OPTIONAL - for AI explanations)
+# Get your API key at: https://cohere.com/
+COHERE_API_KEY=your_cohere_api_key_here
+
