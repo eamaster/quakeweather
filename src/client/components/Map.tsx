@@ -97,13 +97,125 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
     };
   }, []);
 
+  // Set up event handlers once when map is ready
+  useEffect(() => {
+    if (!map.current || !MAPBOX_TOKEN) return;
+
+    const currentMap = map.current;
+
+    // Click handler for clusters
+    const onClusterClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      if (!currentMap) return;
+      const features = currentMap.queryRenderedFeatures(e.point, {
+        layers: ['earthquake-clusters'],
+      });
+      if (!features[0]) return;
+      
+      const clusterId = features[0].properties?.cluster_id;
+      const source = currentMap.getSource('earthquakes') as mapboxgl.GeoJSONSource;
+      
+      console.log('Cluster clicked, expanding...', clusterId);
+      
+      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+        if (err || !currentMap || zoom === undefined || zoom === null) return;
+        currentMap.easeTo({
+          center: (features[0].geometry as any).coordinates,
+          zoom: zoom,
+        });
+      });
+    };
+
+    // Click handler for individual points
+    const onEarthquakeClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      if (!e.features || !e.features[0]) return;
+      const feature = e.features[0] as any;
+      
+      // Find the original earthquake data by matching coordinates and magnitude
+      const featureCoords = feature.geometry.coordinates;
+      const featureMag = feature.properties.mag;
+      
+      const originalQuake = originalQuakeDataRef.current.find(q => {
+        const qCoords = q.geometry.coordinates;
+        const qMag = q.properties.mag;
+        
+        // Match by coordinates (with larger tolerance for precision issues) and magnitude
+        const coordMatch = Math.abs(qCoords[0] - featureCoords[0]) < 0.01 && 
+                          Math.abs(qCoords[1] - featureCoords[1]) < 0.01;
+        const magMatch = Math.abs(qMag - featureMag) < 0.2;
+        
+        return coordMatch && magMatch;
+      });
+      
+      // Use original earthquake data if found, otherwise use Mapbox feature data
+      const quake: QuakeFeature = originalQuake || {
+        type: 'Feature',
+        id: feature.id,
+        properties: feature.properties,
+        geometry: feature.geometry,
+      };
+      
+      console.log('Individual earthquake clicked:', quake.properties.place, quake.properties.mag);
+      console.log('Found original quake:', !!originalQuake);
+      console.log('Original quake coordinates:', originalQuake?.geometry.coordinates);
+      console.log('Feature coordinates:', feature.geometry.coordinates);
+      console.log('Final coordinates:', quake.geometry.coordinates);
+      console.log('Original quake data length:', originalQuakeDataRef.current.length);
+      setSelectedQuake(quake);
+    };
+
+    // Cursor handlers
+    const onEarthquakeEnter = () => {
+      if (currentMap) currentMap.getCanvas().style.cursor = 'pointer';
+    };
+    const onEarthquakeLeave = () => {
+      if (currentMap) currentMap.getCanvas().style.cursor = '';
+    };
+    const onClusterEnter = () => {
+      if (currentMap) currentMap.getCanvas().style.cursor = 'pointer';
+    };
+    const onClusterLeave = () => {
+      if (currentMap) currentMap.getCanvas().style.cursor = '';
+    };
+
+    // Wait for map to be ready before adding event listeners
+    if (currentMap.loaded()) {
+      currentMap.on('click', 'earthquake-clusters', onClusterClick);
+      currentMap.on('click', 'earthquakes', onEarthquakeClick);
+      currentMap.on('mouseenter', 'earthquakes', onEarthquakeEnter);
+      currentMap.on('mouseleave', 'earthquakes', onEarthquakeLeave);
+      currentMap.on('mouseenter', 'earthquake-clusters', onClusterEnter);
+      currentMap.on('mouseleave', 'earthquake-clusters', onClusterLeave);
+    } else {
+      currentMap.once('load', () => {
+        currentMap.on('click', 'earthquake-clusters', onClusterClick);
+        currentMap.on('click', 'earthquakes', onEarthquakeClick);
+        currentMap.on('mouseenter', 'earthquakes', onEarthquakeEnter);
+        currentMap.on('mouseleave', 'earthquakes', onEarthquakeLeave);
+        currentMap.on('mouseenter', 'earthquake-clusters', onClusterEnter);
+        currentMap.on('mouseleave', 'earthquake-clusters', onClusterLeave);
+      });
+    }
+
+    // Cleanup event listeners
+    return () => {
+      if (currentMap) {
+        currentMap.off('click', 'earthquake-clusters', onClusterClick);
+        currentMap.off('click', 'earthquakes', onEarthquakeClick);
+        currentMap.off('mouseenter', 'earthquakes', onEarthquakeEnter);
+        currentMap.off('mouseleave', 'earthquakes', onEarthquakeLeave);
+        currentMap.off('mouseenter', 'earthquake-clusters', onClusterEnter);
+        currentMap.off('mouseleave', 'earthquake-clusters', onClusterLeave);
+      }
+    };
+  }, []); // Only run once when map is initialized
+
   // Update map data when quakes change
   useEffect(() => {
     if (!map.current || !quakeData) return;
 
     // Wait for map to load
     if (!map.current.loaded()) {
-      map.current.on('load', () => updateMapData());
+      map.current.once('load', () => updateMapData());
       return;
     }
 
@@ -214,78 +326,6 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
           'circle-stroke-width': 2,
           'circle-stroke-color': '#fff',
         },
-      });
-
-      // Add click handler for clusters
-      map.current.on('click', 'earthquake-clusters', (e) => {
-        if (!map.current) return;
-        const features = map.current.queryRenderedFeatures(e.point, {
-          layers: ['earthquake-clusters'],
-        });
-        const clusterId = features[0].properties?.cluster_id;
-        const source = map.current.getSource('earthquakes') as mapboxgl.GeoJSONSource;
-        
-        console.log('Cluster clicked, expanding...', clusterId);
-        
-        source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err || !map.current || zoom === undefined || zoom === null) return;
-          map.current.easeTo({
-            center: (features[0].geometry as any).coordinates,
-            zoom: zoom,
-          });
-        });
-      });
-
-      // Add click handler for individual points
-      map.current.on('click', 'earthquakes', (e) => {
-        if (!e.features || !e.features[0]) return;
-        const feature = e.features[0] as any;
-        
-        // Find the original earthquake data by matching coordinates and magnitude
-        const featureCoords = feature.geometry.coordinates;
-        const featureMag = feature.properties.mag;
-        
-        const originalQuake = originalQuakeDataRef.current.find(q => {
-          const qCoords = q.geometry.coordinates;
-          const qMag = q.properties.mag;
-          
-          // Match by coordinates (with larger tolerance for precision issues) and magnitude
-          const coordMatch = Math.abs(qCoords[0] - featureCoords[0]) < 0.01 && 
-                            Math.abs(qCoords[1] - featureCoords[1]) < 0.01;
-          const magMatch = Math.abs(qMag - featureMag) < 0.2;
-          
-          return coordMatch && magMatch;
-        });
-        
-        // Use original earthquake data if found, otherwise use Mapbox feature data
-        const quake: QuakeFeature = originalQuake || {
-          type: 'Feature',
-          id: feature.id,
-          properties: feature.properties,
-          geometry: feature.geometry,
-        };
-        
-        console.log('Individual earthquake clicked:', quake.properties.place, quake.properties.mag);
-        console.log('Found original quake:', !!originalQuake);
-        console.log('Original quake coordinates:', originalQuake?.geometry.coordinates);
-        console.log('Feature coordinates:', feature.geometry.coordinates);
-        console.log('Final coordinates:', quake.geometry.coordinates);
-        console.log('Original quake data length:', originalQuakeDataRef.current.length);
-        setSelectedQuake(quake);
-      });
-
-      // Change cursor on hover
-      map.current.on('mouseenter', 'earthquakes', () => {
-        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-      });
-      map.current.on('mouseleave', 'earthquakes', () => {
-        if (map.current) map.current.getCanvas().style.cursor = '';
-      });
-      map.current.on('mouseenter', 'earthquake-clusters', () => {
-        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-      });
-      map.current.on('mouseleave', 'earthquake-clusters', () => {
-        if (map.current) map.current.getCanvas().style.cursor = '';
       });
     }
   }, [quakeData, magnitudeRange]);
