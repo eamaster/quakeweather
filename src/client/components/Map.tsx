@@ -8,13 +8,18 @@ import { addNowcastHeatmap, addAftershockRing, removePredictionLayers } from '..
 // Mapbox token - set via environment variable
 // IMPORTANT: Never commit actual tokens to Git. Use environment variables.
 // For Vite: Create .env file with VITE_MAPBOX_TOKEN=your_token_here
+// For Cloudflare Pages: Set VITE_MAPBOX_TOKEN in environment variables
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
 if (!MAPBOX_TOKEN) {
   console.error('VITE_MAPBOX_TOKEN environment variable is not set. Map will not load.');
+  console.error('For Cloudflare Pages: Set VITE_MAPBOX_TOKEN in Settings → Environment Variables');
 }
 
-mapboxgl.accessToken = MAPBOX_TOKEN;
+// Only set access token if we have one
+if (MAPBOX_TOKEN) {
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+}
 
 interface MapProps {
   selectedFeed: FeedType;
@@ -63,6 +68,12 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+    
+    // Don't initialize map if we don't have a token
+    if (!MAPBOX_TOKEN) {
+      console.error('Cannot initialize map: Mapbox token is missing');
+      return;
+    }
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -302,6 +313,33 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
       addAftershockRing(map.current, aftershockData);
     }
   }, [predictionData, aftershockData]);
+
+  // Show error if Mapbox token is missing
+  if (!MAPBOX_TOKEN) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md mx-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            ⚠️ Mapbox Token Missing
+          </h3>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+            The map cannot load because the Mapbox access token is not configured.
+          </p>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-3 mb-4">
+            <p className="text-xs text-yellow-800 dark:text-yellow-200 font-mono">
+              For Cloudflare Pages:<br />
+              1. Go to Settings → Environment Variables<br />
+              2. Add: VITE_MAPBOX_TOKEN = your_token<br />
+              3. Redeploy the project
+            </p>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Check the browser console for more details.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full">
