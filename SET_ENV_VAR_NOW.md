@@ -26,7 +26,7 @@ Even though we built locally with the token, **Cloudflare Pages needs the enviro
 
 3. **Add the following:**
    - **Variable name:** `VITE_MAPBOX_TOKEN`
-   - **Value:** `REMOVED_MAPBOX_TOKEN`
+   - **Value:** `your_mapbox_token_here` (get from your Mapbox account)
    - **Environment:** Select **Production** (and optionally Preview)
 
 4. **Click "Save"**
@@ -51,8 +51,8 @@ I'll trigger a new build by pushing a commit to the `quakeweather-production` br
 If you can't set the env var in the dashboard, I can rebuild and deploy with the token explicitly set:
 
 ```bash
-# This will be done automatically
-$env:VITE_MAPBOX_TOKEN="REMOVED_MAPBOX_TOKEN"
+# Set environment variable from .env file (never hardcode in commands)
+$env:VITE_MAPBOX_TOKEN=(Get-Content .env | Select-String "VITE_MAPBOX_TOKEN" | ForEach-Object { $_.Line.Split('=')[1] })
 npm run build
 npx wrangler pages deploy dist --project-name=quakeweather --branch=quakeweather-production
 ```
