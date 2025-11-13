@@ -16,6 +16,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
   const [M0, setM0] = useState(4.5);
   const [gridSize, setGridSize] = useState(1.0); // Start with safer default
   const [showExplanation, setShowExplanation] = useState(false);
+  const [cohereNotConfigured, setCohereNotConfigured] = useState(false);
   
   // Fetch nowcast predictions with debouncing
   const { data: predictData, isLoading: predictLoading, error: predictError, refetch } = useQuery<PredictResponse>({
@@ -87,14 +88,43 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Explain API error:', response.status, errorText);
-        throw new Error(`Failed to fetch explanation: ${response.status} ${errorText}`);
+        // Read response body once (can only be read once)
+        const responseText = await response.text();
+        let errorData: any = null;
+        
+        // Try to parse as JSON
+        try {
+          errorData = JSON.parse(responseText);
+        } catch {
+          // Not JSON, use as plain text
+        }
+        
+        // Handle 501 (Cohere API not configured) gracefully
+        if (response.status === 501 && errorData?.error === 'Cohere API not configured') {
+          setCohereNotConfigured(true);
+          // Return null to indicate explanation is unavailable, but don't throw
+          return null;
+        }
+        
+        // For other errors (429 rate limit, 500, etc.), throw as before
+        const errorMessage = errorData?.message || errorData?.error || responseText || `HTTP ${response.status}`;
+        console.error('Explain API error:', response.status, errorMessage);
+        throw new Error(`Failed to fetch explanation: ${response.status} ${errorMessage}`);
       }
+      
+      // Reset the not-configured flag on success
+      setCohereNotConfigured(false);
       return response.json();
     },
     enabled: showExplanation && !!predictData,
   });
+  
+  // Reset cohereNotConfigured flag when explanation is toggled off
+  useEffect(() => {
+    if (!showExplanation) {
+      setCohereNotConfigured(false);
+    }
+  }, [showExplanation]);
   
   // Toggle prediction mode
   const handleToggle = () => {
@@ -285,7 +315,17 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
                         Generating explanation...
                       </p>
                     )}
-                    {explainData && (
+                    {cohereNotConfigured && (
+                      <div className="text-xs text-gray-700 dark:text-gray-300">
+                        <p className="mb-2">
+                          ℹ️ AI explanation is currently disabled (Cohere API key not configured). Predictions will still show the heatmap without narrative text.
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-400 italic">
+                          The heatmap visualization above remains fully functional.
+                        </p>
+                      </div>
+                    )}
+                    {explainData && !cohereNotConfigured && (
                       <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
                         {explainData.explanation}
                       </p>
