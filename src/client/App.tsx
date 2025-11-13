@@ -149,9 +149,6 @@ function App() {
       <footer className="bg-yellow-50 dark:bg-yellow-900/20 border-t border-yellow-200 dark:border-yellow-800 z-10">
         <div className="max-w-full px-2 py-1 sm:px-4 sm:py-2 lg:px-8">
           <p className="text-xs text-yellow-800 dark:text-yellow-200 text-center leading-tight">
-            <span className="hidden sm:inline">⚠️ <strong>Educational Tool Only:</strong> Earthquake prediction is not scientifically
-            reliable. Do not use this tool for safety-critical decisions. Weather and seismic
-            activity are independent phenomena.</span>
             <span className="sm:hidden">⚠️ <strong>Educational Tool Only</strong> - Not for safety decisions</span>
           </p>
         </div>
