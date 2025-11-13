@@ -46,24 +46,36 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
     refetchInterval: 900000, // Refresh every 15 minutes
   });
   
-  // Fetch AI explanation
-  const { data: explainData, isLoading: explainLoading } = useQuery<ExplainResponse>({
+  // Fetch AI explanation - manual trigger via refetch()
+  const {
+    data: explainData,
+    isLoading: explainLoading,
+    isError: explainError,
+    error: explainErrorObject,
+    refetch: fetchExplanation,
+  } = useQuery<ExplainResponse, Error>({
     queryKey: ['explain', predictData?.generated || ''],
+    enabled: false, // manual trigger via fetchExplanation()
     queryFn: async () => {
-      if (!predictData) throw new Error('No prediction data');
-      
-      const apiBase = window.location.hostname === 'hesam.me' 
+      if (!predictData) {
+        throw new Error('No prediction data');
+      }
+
+      const apiBase = window.location.hostname === 'hesam.me'
         ? 'https://quakeweather-api.smah0085.workers.dev'
         : '';
-        
+
       const topCells = (predictData as PredictResponse).cells
-        ?.sort((a: any, b: any) => b.probability - a.probability)
+        ?.slice() // avoid mutating original array
+        .sort((a: any, b: any) => b.probability - a.probability)
         .slice(0, 5) || [];
-      
-      // Get recent quakes from the Map component's data
+
+      // Get recent quakes from Map component's data attribute
       const mapElement = document.querySelector('[data-quake-data]');
-      const quakeData = mapElement ? JSON.parse(mapElement.getAttribute('data-quake-data') || '[]') : [];
-      
+      const quakeData = mapElement
+        ? JSON.parse(mapElement.getAttribute('data-quake-data') || '[]')
+        : [];
+
       const recentEventsData = quakeData.slice(0, 5).map((q: any) => ({
         lat: q.geometry.coordinates[1],
         lon: q.geometry.coordinates[0],
@@ -71,38 +83,35 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         time: q.properties.time,
         place: q.properties.place,
       }));
-      
+
       console.log('Explain API request:', { topCells, recentEvents: recentEventsData });
-      
+
       if (topCells.length === 0) {
         throw new Error('No prediction cells available for explanation');
       }
-      
+
       const response = await fetch(`${apiBase}/api/explain`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'max-age=900', // Cache for 15 minutes
+          'Cache-Control': 'max-age=900',
         },
         body: JSON.stringify({ topCells, recentEvents: recentEventsData }),
       });
-      
+
+      // Read error body carefully; handle Cohere-not-configured case
       if (!response.ok) {
-        // Read response body once (can only be read once)
         const responseText = await response.text();
         let errorData: any = null;
-        
-        // Try to parse as JSON
         try {
           errorData = JSON.parse(responseText);
         } catch {
-          // Not JSON, use as plain text
+          // ignore - plain text
         }
-        
-        // Handle 501 (Cohere API not configured) gracefully
+
         if (response.status === 501 && errorData?.error === 'Cohere API not configured') {
           setCohereNotConfigured(true);
-          // Return placeholder ExplainResponse to keep TypeScript happy
+          // Return a placeholder ExplainResponse to keep types happy
           return {
             explanation: '',
             generated: new Date().toISOString(),
@@ -111,18 +120,21 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
             disclaimer: 'AI explanation disabled (Cohere API key not configured).',
           };
         }
-        
-        // For other errors (429 rate limit, 500, etc.), throw as before
-        const errorMessage = errorData?.message || errorData?.error || responseText || `HTTP ${response.status}`;
+
+        const errorMessage =
+          errorData?.message ||
+          errorData?.error ||
+          responseText ||
+          `HTTP ${response.status}`;
+
         console.error('Explain API error:', response.status, errorMessage);
-        throw new Error(`Failed to fetch explanation: ${response.status} ${errorMessage}`);
+        throw new Error(errorMessage);
       }
-      
-      // Reset the not-configured flag on success
+
+      // If we reached here, Cohere is configured and responded
       setCohereNotConfigured(false);
       return response.json();
     },
-    enabled: showExplanation && !!predictData,
   });
   
   // Reset cohereNotConfigured flag when explanation is toggled off
@@ -141,6 +153,27 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
       refetch();
     } else {
       onShowHeatmap(null);  // Clear heatmap
+    }
+  };
+
+  // Handle AI Explanation button click
+  const handleExplainClick = () => {
+    if (!predictData) {
+      console.warn('AI explanation clicked but no prediction data is available yet');
+      return;
+    }
+
+    const nextState = !showExplanation;
+    setShowExplanation(nextState);
+
+    console.log('AI Explanation button clicked', {
+      nextState,
+      hasPredictData: !!predictData,
+    });
+
+    // If we are turning the explanation ON, trigger a refetch
+    if (nextState) {
+      fetchExplanation();
     }
   };
   
@@ -308,7 +341,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
             {isEnabled && predictData && (
               <div>
                 <button
-                  onClick={() => setShowExplanation(!showExplanation)}
+                  onClick={handleExplainClick}
                   className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   {showExplanation ? '🤖 Hide' : '🤖 AI Explanation'}
@@ -324,14 +357,20 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
                     {cohereNotConfigured && (
                       <div className="text-xs text-gray-700 dark:text-gray-300">
                         <p className="mb-2">
-                          ℹ️ AI explanation is currently disabled (Cohere API key not configured). Predictions will still show the heatmap without narrative text.
+                          ℹ️ AI explanation is currently disabled (Cohere API key not configured).
+                          Predictions still show the heatmap without narrative text.
                         </p>
                         <p className="text-gray-600 dark:text-gray-400 italic">
                           The heatmap visualization above remains fully functional.
                         </p>
                       </div>
                     )}
-                    {!cohereNotConfigured && explainData && explainData.explanation && (
+                    {!cohereNotConfigured && explainError && (
+                      <p className="text-xs text-red-600 dark:text-red-400">
+                        ❌ Failed to load AI explanation: {explainErrorObject?.message}
+                      </p>
+                    )}
+                    {!cohereNotConfigured && !explainError && explainData && explainData.explanation && (
                       <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
                         {explainData.explanation}
                       </p>
