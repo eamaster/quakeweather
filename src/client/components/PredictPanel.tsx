@@ -6,9 +6,10 @@ interface PredictPanelProps {
   onShowHeatmap: (data: PredictResponse | null) => void;
   onShowAftershock: (data: any) => void;
   onShowMetrics: () => void;
+  viewportBBox?: [number, number, number, number] | null;
 }
 
-export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowAftershock, onShowMetrics }: PredictPanelProps) {
+export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowAftershock, onShowMetrics, viewportBBox }: PredictPanelProps) {
   // onShowAftershock will be used when aftershock ring functionality is implemented
   const [isOpen, setIsOpen] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -20,14 +21,21 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
   
   // Fetch nowcast predictions with debouncing
   const { data: predictData, isLoading: predictLoading, error: predictError, refetch } = useQuery<PredictResponse>({
-    queryKey: ['predict', horizon, M0, gridSize],
+    queryKey: ['predict', horizon, M0, gridSize, viewportBBox ? viewportBBox.join(',') : 'model'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       const apiBase = window.location.hostname === 'hesam.me' 
         ? 'https://quakeweather-api.smah0085.workers.dev'
         : '';
+      const params = new URLSearchParams({
+        horizon: String(horizon),
+        cellDeg: String(gridSize),
+      });
+      if (viewportBBox) {
+        params.set('bbox', viewportBBox.join(','));
+      }
       const response = await fetch(
-        `${apiBase}/api/predict?horizon=${horizon}&cellDeg=${gridSize}`,
+        `${apiBase}/api/predict?${params.toString()}`,
         {
           headers: {
             'Cache-Control': 'max-age=900', // Cache for 15 minutes
@@ -38,7 +46,17 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         if (response.status === 429) {
           throw new Error('Rate limit exceeded. Please wait before making more requests.');
         }
-        throw new Error('Failed to fetch predictions');
+        let message = 'Failed to fetch predictions';
+        try {
+          const errorBody: any = await response.json();
+          const parts = [errorBody?.message || errorBody?.error, errorBody?.suggestion].filter(Boolean);
+          if (parts.length) {
+            message = parts.join(' — ');
+          }
+        } catch {
+          // ignore JSON parse issues
+        }
+        throw new Error(message);
       }
       return response.json();
     },
@@ -330,7 +348,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
                     <p>❌ Error: {(predictError as Error).message}</p>
                     {(predictError as Error).message.includes('Grid too large') && (
                       <p className="text-xs mt-1 text-orange-600 dark:text-orange-400">
-                        💡 Try a larger cell size (1° or 0.5°) or smaller region.
+                        💡 Try a larger cell size (for the full region, 1° is safest), or zoom in to a smaller map area before using finer grids (0.5°, 0.25°, 0.1°).
                       </p>
                     )}
                   </div>

@@ -14,6 +14,7 @@ function App() {
   // Recent quakes are now accessed from Map component data
   const [predictionData, setPredictionData] = useState<any>(null);
   const [aftershockData, setAftershockData] = useState<any>(null);
+  const [viewportBBox, setViewportBBox] = useState<[number, number, number, number] | null>(null);
 
   useEffect(() => {
     // Check system preference
@@ -119,6 +120,7 @@ function App() {
             magnitudeRange={magnitudeRange}
             predictionData={predictionData}
             aftershockData={aftershockData}
+            onViewportChange={setViewportBBox}
           />
           
           {/* Predict Panel */}
@@ -132,6 +134,7 @@ function App() {
               setAftershockData(data);
             }}
             onShowMetrics={() => setShowMetrics(true)}
+            viewportBBox={viewportBBox}
           />
         </div>
       </div>

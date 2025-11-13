@@ -25,6 +25,7 @@ interface MapProps {
   magnitudeRange: [number, number];
   predictionData?: PredictResponse | null;
   aftershockData?: AftershockResponse | null;
+  onViewportChange?: (bbox: [number, number, number, number]) => void;
 }
 
 // Helper functions for magnitude styling (used in map paint properties)
@@ -40,7 +41,7 @@ interface MapProps {
 //   return 4 + mag * 3;
 // }
 
-export default function Map({ selectedFeed, magnitudeRange, predictionData, aftershockData }: MapProps) {
+export default function Map({ selectedFeed, magnitudeRange, predictionData, aftershockData, onViewportChange }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   // const popup = useRef<mapboxgl.Popup | null>(null);
@@ -104,6 +105,19 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
     if (!map.current || !MAPBOX_TOKEN) return;
 
     const currentMap = map.current;
+
+    const updateViewportBounds = () => {
+      if (!currentMap || !onViewportChange) return;
+      const bounds = currentMap.getBounds();
+      if (!bounds) return;
+      const bbox: [number, number, number, number] = [
+        bounds.getWest(),
+        bounds.getSouth(),
+        bounds.getEast(),
+        bounds.getNorth(),
+      ];
+      onViewportChange(bbox);
+    };
 
     // Click handler for clusters
     const onClusterClick = (e: mapboxgl.MapLayerMouseEvent) => {
@@ -181,20 +195,24 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
 
     // Wait for map to be ready before adding event listeners
     if (currentMap.loaded()) {
+      updateViewportBounds();
       currentMap.on('click', 'earthquake-clusters', onClusterClick);
       currentMap.on('click', 'earthquakes', onEarthquakeClick);
       currentMap.on('mouseenter', 'earthquakes', onEarthquakeEnter);
       currentMap.on('mouseleave', 'earthquakes', onEarthquakeLeave);
       currentMap.on('mouseenter', 'earthquake-clusters', onClusterEnter);
       currentMap.on('mouseleave', 'earthquake-clusters', onClusterLeave);
+      currentMap.on('moveend', updateViewportBounds);
     } else {
       currentMap.once('load', () => {
+        updateViewportBounds();
         currentMap.on('click', 'earthquake-clusters', onClusterClick);
         currentMap.on('click', 'earthquakes', onEarthquakeClick);
         currentMap.on('mouseenter', 'earthquakes', onEarthquakeEnter);
         currentMap.on('mouseleave', 'earthquakes', onEarthquakeLeave);
         currentMap.on('mouseenter', 'earthquake-clusters', onClusterEnter);
         currentMap.on('mouseleave', 'earthquake-clusters', onClusterLeave);
+        currentMap.on('moveend', updateViewportBounds);
       });
     }
 
@@ -207,6 +225,7 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
         currentMap.off('mouseleave', 'earthquakes', onEarthquakeLeave);
         currentMap.off('mouseenter', 'earthquake-clusters', onClusterEnter);
         currentMap.off('mouseleave', 'earthquake-clusters', onClusterLeave);
+        currentMap.off('moveend', updateViewportBounds);
       }
     };
   }, []); // Only run once when map is initialized
