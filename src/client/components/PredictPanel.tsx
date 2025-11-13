@@ -47,7 +47,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
   });
   
   // Fetch AI explanation
-  const { data: explainData, isLoading: explainLoading } = useQuery<ExplainResponse>({
+  const { data: explainData, isLoading: explainLoading } = useQuery<ExplainResponse | null>({
     queryKey: ['explain', predictData?.generated || ''],
     queryFn: async () => {
       if (!predictData) throw new Error('No prediction data');
@@ -325,7 +325,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
                         </p>
                       </div>
                     )}
-                    {explainData && !cohereNotConfigured && (
+                    {!cohereNotConfigured && explainData !== null && explainData !== undefined && (
                       <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
                         {explainData.explanation}
                       </p>
