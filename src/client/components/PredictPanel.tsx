@@ -222,7 +222,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-20 right-4 z-50 px-4 py-2 rounded-lg shadow-lg transition-all ${
+        className={`absolute bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg transition-all ${
           isEnabled
             ? 'bg-purple-600 hover:bg-purple-700 text-white'
             : 'bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white'
