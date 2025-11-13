@@ -7,8 +7,10 @@ import { addNowcastHeatmap, addAftershockRing, removePredictionLayers } from '..
 
 // Mapbox token - set via environment variable
 // IMPORTANT: Never commit actual tokens to Git. Use environment variables.
-// For Vite: Create .env file with VITE_MAPBOX_TOKEN=your_token_here
-// For Cloudflare Pages: Set VITE_MAPBOX_TOKEN in Environment Variables
+// For local dev: Create .env file with VITE_MAPBOX_TOKEN=your_token_here
+// For production (GitHub Pages): Set VITE_MAPBOX_TOKEN as GitHub Actions secret
+//   and ensure the workflow sets env.VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
+// Legacy/alternative: For Cloudflare Pages, set VITE_MAPBOX_TOKEN in Environment Variables
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
 // Only set access token if it exists
@@ -371,12 +373,21 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
               </p>
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-3 mb-4">
                 <p className="text-xs text-blue-800 dark:text-blue-200 font-medium mb-2">To fix this:</p>
-                <ol className="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-decimal list-inside">
-                  <li>Go to Cloudflare Pages dashboard</li>
-                  <li>Navigate to Settings → Environment Variables</li>
-                  <li>Add <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">VITE_MAPBOX_TOKEN</code> with your Mapbox token</li>
-                  <li>Redeploy the Pages project</li>
-                </ol>
+                <div className="text-xs text-blue-700 dark:text-blue-300 space-y-3">
+                  <div>
+                    <p className="font-semibold mb-1">For local development:</p>
+                    <p>Create a <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">.env</code> file in the project root with:</p>
+                    <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded block mt-1">VITE_MAPBOX_TOKEN=your_mapbox_token_here</code>
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-1">For production (GitHub Pages):</p>
+                    <ol className="space-y-1 list-decimal list-inside ml-2">
+                      <li>Create a GitHub Actions secret named <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">VITE_MAPBOX_TOKEN</code> in your repository settings</li>
+                      <li>Ensure the GitHub Actions workflow sets <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">env.VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}</code> for the build job</li>
+                      <li>Push a new commit to trigger a rebuild</li>
+                    </ol>
+                  </div>
+                </div>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Get your Mapbox token at: <a href="https://account.mapbox.com/access-tokens/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">account.mapbox.com</a>
