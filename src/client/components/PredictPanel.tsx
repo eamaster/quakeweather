@@ -47,7 +47,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
   });
   
   // Fetch AI explanation
-  const { data: explainData, isLoading: explainLoading } = useQuery<ExplainResponse | null>({
+  const { data: explainData, isLoading: explainLoading } = useQuery<ExplainResponse>({
     queryKey: ['explain', predictData?.generated || ''],
     queryFn: async () => {
       if (!predictData) throw new Error('No prediction data');
@@ -102,8 +102,14 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
         // Handle 501 (Cohere API not configured) gracefully
         if (response.status === 501 && errorData?.error === 'Cohere API not configured') {
           setCohereNotConfigured(true);
-          // Return null to indicate explanation is unavailable, but don't throw
-          return null;
+          // Return placeholder ExplainResponse to keep TypeScript happy
+          return {
+            explanation: '',
+            generated: new Date().toISOString(),
+            top_cells_analyzed: topCells,
+            recent_events_analyzed: recentEventsData,
+            disclaimer: 'AI explanation disabled (Cohere API key not configured).',
+          };
         }
         
         // For other errors (429 rate limit, 500, etc.), throw as before
@@ -325,7 +331,7 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
                         </p>
                       </div>
                     )}
-                    {!cohereNotConfigured && explainData !== null && explainData !== undefined && (
+                    {!cohereNotConfigured && explainData && explainData.explanation && (
                       <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
                         {explainData.explanation}
                       </p>
