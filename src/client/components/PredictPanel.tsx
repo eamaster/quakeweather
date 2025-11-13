@@ -72,11 +72,25 @@ export default function PredictPanel({ onShowHeatmap, onShowAftershock: _onShowA
 
       // Get recent quakes from Map component's data attribute
       const mapElement = document.querySelector('[data-quake-data]');
-      const quakeData = mapElement
-        ? JSON.parse(mapElement.getAttribute('data-quake-data') || '[]')
+      let rawQuakeData: any = [];
+      if (mapElement) {
+        const attr = mapElement.getAttribute('data-quake-data') || '[]';
+        try {
+          rawQuakeData = JSON.parse(attr);
+        } catch (err) {
+          console.warn('Failed to parse data-quake-data attribute for AI explanation:', err);
+          rawQuakeData = [];
+        }
+      }
+
+      // Allow either a FeatureCollection or a plain array of features
+      const quakeFeatures = Array.isArray(rawQuakeData)
+        ? rawQuakeData
+        : Array.isArray(rawQuakeData?.features)
+        ? rawQuakeData.features
         : [];
 
-      const recentEventsData = quakeData.slice(0, 5).map((q: any) => ({
+      const recentEventsData = quakeFeatures.slice(0, 5).map((q: any) => ({
         lat: q.geometry.coordinates[1],
         lon: q.geometry.coordinates[0],
         mag: q.properties.mag,
