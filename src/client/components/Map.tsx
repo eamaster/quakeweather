@@ -383,7 +383,7 @@ export default function Map({ selectedFeed, magnitudeRange, predictionData, afte
                     <p className="font-semibold mb-1">For production (GitHub Pages):</p>
                     <ol className="space-y-1 list-decimal list-inside ml-2">
                       <li>Create a GitHub Actions secret named <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">VITE_MAPBOX_TOKEN</code> in your repository settings</li>
-                      <li>Ensure the GitHub Actions workflow sets <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">env.VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}</code> for the build job</li>
+                      <li>Ensure the GitHub Actions workflow sets <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">env.VITE_MAPBOX_TOKEN: {'${{ secrets.VITE_MAPBOX_TOKEN }}'}</code> for the build job</li>
                       <li>Push a new commit to trigger a rebuild</li>
                     </ol>
                   </div>
